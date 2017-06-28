@@ -1,0 +1,24 @@
+#!/bin/sh
+# Fixed quota per ip, drop packets once quota is reached
+
+# Download quota in Mb
+max_dl=10
+max_dl_bytes=$(($max_dl * 1024 * 1024))
+
+# openwrt lan
+if=br-lan     # openwrt
+
+# create ipset for accounting, no timeout
+ipset create IP_QUOTA hash:ip counters
+
+IPT_FILTER="iptables -A FORWARD -o $if"
+
+# if ip doesn't exist in the set, add it
+$IPT_FILTER -m set ! --match-set IP_QUOTA dst -j SET --add-set IP_QUOTA dst
+
+# if packet exists in the set, check bytes
+# if byte counter > quota, drop
+#$IPT -m set --match-set IP_QUOTA dst --bytes-gt $max_dl_bytes -j REJECT --reject-with tcp-rst
+$IPT_FILTER -m set --match-set IP_QUOTA dst --bytes-gt $max_dl_bytes -j DROP
+
+
