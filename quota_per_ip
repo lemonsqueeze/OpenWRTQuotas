@@ -1,24 +1,68 @@
 #!/bin/sh
-# Fixed quota per ip, drop packets once quota is reached
+# Fixed quota per ip, cap download once over quota
+# needs modules sch_htb sch_sfq
 
 # Download quota in Mb
-max_dl=10
-max_dl_bytes=$(($max_dl * 1024 * 1024))
+dl_quota_mb=150
+dl_quota=$(($dl_quota_mb * 1024 * 1024))
 
-# openwrt lan
-if=br-lan     # openwrt
+# max download once over quota (k/s)
+dl_cap_kb=50
+dl_cap=$(($dl_cap_kb * 8))
+
+# lan addresses to limit (make sure it includes dhcp range)
+lan=192.168.1
+ip_start=100
+ip_end=249
+
+# lan interface
+if=br-lan		# openwrt
+
+
+indexes() { seq $ip_start $ip_end; }
+run() { echo "$@"; if ! "$@"; then echo "failed !"; fi  }
+
+#######################################################################
+# Rate limit
+
+insmod sch_htb
+insmod sch_sfq
+insmod cls_fw
+
+TCA="tc class add dev $if"
+TFA="tc filter add dev $if"
+TQA="tc qdisc add dev $if"
+SFQ="sfq perturb 10"
+
+run tc qdisc del dev $if root
+run $TQA root handle 1: htb
+for i in `indexes`; do
+    run $TCA parent 1: classid 1:$i htb rate ${dl_cap}kbit ceil ${dl_cap}kbit prio 2
+    run $TQA parent 1:$i handle $i: $SFQ
+    run $TFA parent 1:0 prio 2 protocol ip handle $i fw flowid 1:$i
+done
+
+
+#######################################################################
+# Quota
+
+insmod nfnetlink
+insmod ip_set
+insmod ip_set_hash_ip
+insmod xt_set
 
 # create ipset for accounting, no timeout
-ipset create IP_QUOTA hash:ip counters
+run ipset create IP_QUOTA hash:ip counters
 
-IPT_FILTER="iptables -A FORWARD -o $if"
+IPT="iptables -t mangle -A POSTROUTING -o $if"
 
 # if ip doesn't exist in the set, add it
-$IPT_FILTER -m set ! --match-set IP_QUOTA dst -j SET --add-set IP_QUOTA dst
+run $IPT -m set ! --match-set IP_QUOTA dst -j SET --add-set IP_QUOTA dst
 
 # if packet exists in the set, check bytes
-# if byte counter > quota, drop
-#$IPT -m set --match-set IP_QUOTA dst --bytes-gt $max_dl_bytes -j REJECT --reject-with tcp-rst
-$IPT_FILTER -m set --match-set IP_QUOTA dst --bytes-gt $max_dl_bytes -j DROP
+# if over quota, set mark to enable rate limit
+for i in `indexes`; do
+    run $IPT --dst $lan.$i -m set --match-set IP_QUOTA dst --bytes-gt $dl_quota -j MARK --set-mark $i
+done
 
 
