@@ -6,7 +6,11 @@
 dl_quota_mb=150
 dl_quota=$(($dl_quota_mb * 1024 * 1024))
 
-# max download once over quota (k/s)
+# max download speed (k/s)
+dl_cap_max_kb=100
+dl_cap_max=$(($dl_cap_max_kb * 8))
+
+# max download speed once over quota (k/s)
 dl_cap_kb=50
 dl_cap=$(($dl_cap_kb * 8))
 
@@ -40,9 +44,17 @@ SFQ="sfq perturb 10"
 
 run $TQA root handle 1: htb
 for i in `indexes`; do
-    run $TCA parent 1: classid 1:$i htb rate ${dl_cap}kbit ceil ${dl_cap}kbit prio 2
-    run $TQA parent 1:$i handle $i: $SFQ
-    run $TFA parent 1:0 prio 2 protocol ip handle $i fw flowid 1:$i
+    id=$i
+    # over quota speed limits
+    run $TCA parent 1: classid 1:$id htb rate ${dl_cap}kbit ceil ${dl_cap}kbit prio 2
+    run $TQA parent 1:$id handle $id: $SFQ
+    run $TFA parent 1:0 prio 2 protocol ip handle $id fw flowid 1:$id
+
+    id=$(( $i + 1000 ))
+    # normal speed limits
+    run $TCA parent 1: classid 1:$id htb rate ${dl_cap_max}kbit ceil ${dl_cap_max}kbit prio 2
+    run $TQA parent 1:$id handle $id: $SFQ
+    run $TFA parent 1:0 prio 2 protocol ip handle $id fw flowid 1:$id
 done
 
 #######################################################################
@@ -61,10 +73,9 @@ IPT="iptables -t mangle -A POSTROUTING -o $if"
 # if ip doesn't exist in the set, add it
 run $IPT -m set ! --match-set IP_QUOTA dst -j SET --add-set IP_QUOTA dst
 
-# if packet exists in the set, check bytes
-# if over quota, set mark to enable rate limit
+# set mark for regular download limit, 
+# if over quota, set mark for hard speed limit
 for i in `indexes`; do
+    run $IPT --dst $lan.$i -j MARK --set-mark $(( $i + 1000 ))
     run $IPT --dst $lan.$i -m set --match-set IP_QUOTA dst --bytes-gt $dl_quota -j MARK --set-mark $i
 done
-
-
