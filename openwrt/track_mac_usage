@@ -43,6 +43,9 @@ prev=/tmp/arp.prev
 parse_arp() {  grep $if | sed -e 's/  */ /g' | cut -d' ' -f1,4 ;  }
 list_arp()  {  tr ' ' '\n' ;  }
 arp_has()   {  grep -qF "$1 $2" ;  }
+mac_ips()   {  grep -F $1 | cut -d' ' -f1 ;  }
+list_macs() {  cut -d' ' -f2 | sort -u ;  }
+dup_macs()  {  [ -f $1 ] && [ `wc -l < $1` != `list_macs < $1 | wc -l` ];  }
 
 ####################################################################################
 
@@ -51,16 +54,42 @@ parse_arp < /proc/net/arp > $cur
 # save usage of mac addresses which disappeared
 list_arp < $prev | while read ip ; read mac; do
     if ! arp_has $ip $mac < $cur; then
-	set_mac_counter $mac `get_ip_counter $ip`
+	count=`get_ip_counter $ip`
+	echo "saving $ip $mac: $count"
+	set_mac_counter $mac $count
 	set_ip_counter $ip 0
     fi
 done
 
-# restore new mac addresses usage
+# restore new mac addresses ip counter
 list_arp < $cur | while read ip ; read mac; do
     if ! arp_has $ip $mac < $prev; then
-	set_ip_counter $ip `get_mac_counter $mac`
+	mac_count=`get_mac_counter $mac`  # saved mac usage
+	ip_count=`get_ip_counter $ip`     # bytes transferred since we last run
+	count=$(( $mac_count + $ip_count ))	
+	echo "new $ip $mac: setting count $count"
+	set_ip_counter $ip $count
     fi
 done
+
+# messy case: multiple arp entries for a mac.
+# if mac changes ip somehow, replicate ip counters
+if dup_macs $cur; then 
+    for mac in `list_macs < $cur`; do
+	[ `mac_ips $mac < $cur | wc -l` = 1 ] && continue
+	
+	max_count=0
+	ips=`mac_ips $mac < $cur`
+	for ip in $ips; do
+	    count=`get_ip_counter $ip`
+	    [ $count -gt $max_count ] && max_count=$count
+	done
+	
+	for ip in $ips; do
+	    echo "dup $ip $mac: setting count $max_count"
+	    set_ip_counter $ip $max_count
+	done
+    done
+fi
 
 mv $cur $prev
