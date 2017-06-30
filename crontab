@@ -7,5 +7,5 @@ SHELL=/bin/ash
 
 # run every minute
 # m  h  dom mon dow   command
-  *  *   *   *   *    /tmp/track_mac_usage
+  *  *   *   *   *    /root/track_mac_usage
 
