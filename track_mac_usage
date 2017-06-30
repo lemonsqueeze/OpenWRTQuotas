@@ -10,6 +10,12 @@ ipset list IP_QUOTA > /dev/null || exit 0
 if=br-lan
 
 ####################################################################################
+# mac host names table
+mac_names=/tmp/mac_names
+name_for_mac() {  cat $mac_names | grep -F $1 | head -1 | cut -d' ' -f2 ;  }
+host_name() {  nslookup "$1" | tail -1 | cut -d' ' -f4- ;  }
+
+####################################################################################
 # total downloads by mac address
 mac_counters=/tmp/mac_counters
 
@@ -17,10 +23,12 @@ get_mac_counter() {  ( grep -F $1 < $mac_counters || echo $1 0 ) | cut -d' ' -f2
 
 set_mac_counter()
 { 
+    mac=$1;  count=$2
     tmp=/tmp/mac_counters_
     timestamp=`date +"%s"`
-    grep -vF $1 < $mac_counters > $tmp
-    echo $1 $2 $timestamp >> $tmp
+    name=`name_for_mac $mac`
+    grep -vF $mac < $mac_counters > $tmp
+    echo $mac $count $timestamp "$name" >> $tmp
     mv $tmp $mac_counters
 }
 
@@ -92,5 +100,14 @@ if dup_macs $cur; then
 	done
     done
 fi
+
+# save computer names for logging
+rm $mac_names
+list_arp < $cur | while read ip ; read mac; do
+    name=`host_name $ip`
+    [ -n "$name" ] || name=`name_for_mac $mac`
+    [ -n "$name" ] && echo "$mac $name" >> $mac_names
+done
+
 
 mv $cur $prev

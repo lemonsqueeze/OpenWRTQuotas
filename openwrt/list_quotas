@@ -1,6 +1,8 @@
 #!/bin/sh
 # Show current/saved quota usage
 
+host_name() {  nslookup "$1" | tail -1 | cut -d' ' -f4- ;  }
+
 print_quota()
 {
     bytes="$1";  ip="$2";  mac="$3";  name="$4";  time="$5"
@@ -11,10 +13,10 @@ print_quota()
 
 echo ""
 echo "Quota usage (saved):"
-cat /tmp/mac_counters | tr ' '  '\n' |
-while read mac; read bytes; read timestamp; do
+cat /tmp/mac_counters 2>/dev/null | tr ' '  '\n' |
+while read mac; read bytes; read timestamp; read name; do
     time=`date -I --date=@$timestamp`
-    print_quota "$bytes" "" "$mac" "" "$time"
+    print_quota "$bytes" "" "$mac" "$name" "$time"
 done
 
 echo ""
@@ -22,7 +24,7 @@ echo "Quota usage (currently used):"
 ipset save IP_QUOTA | grep -vF 255.255.255.255 | grep add | cut -d' ' -f3,7 | tr ' '  '\n' |
 while read ip; read bytes; do
     mac=`cat /proc/net/arp | grep -F $ip | sed -e 's/  */ /g' | cut -d' ' -f4`
-    name=`nslookup $ip | tail -1 | cut -d' ' -f4-`
+    name=`host_name $ip`
     print_quota "$bytes" "$ip" "$mac" "$name" ""
 done
 echo ""
