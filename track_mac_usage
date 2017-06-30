@@ -18,8 +18,9 @@ get_mac_counter() {  ( grep -F $1 < $mac_counters || echo $1 0 ) | cut -d' ' -f2
 set_mac_counter()
 { 
     tmp=/tmp/mac_counters_
+    timestamp=`date +"%s"`
     grep -vF $1 < $mac_counters > $tmp
-    echo $1 $2 >> $tmp
+    echo $1 $2 $timestamp >> $tmp
     mv $tmp $mac_counters
 }
 

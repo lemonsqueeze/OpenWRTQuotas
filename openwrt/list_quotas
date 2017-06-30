@@ -3,17 +3,18 @@
 
 print_quota()
 {
-    bytes="$1";  ip="$2";  mac="$3";  name="$4";
+    bytes="$1";  ip="$2";  mac="$3";  name="$4";  time="$5"
     mb=$(( $bytes / (1024 * 1024) ))
     hk=$(( ($bytes % (1024 * 1024)) / (100 * 1024) ))
-    printf "  %-15s  %5i.$hk Mb  %-40s %s\n" "$ip" "$mb" "$name" "$mac"
+    printf "  %-15s  %5i.$hk Mb  %-35s $mac $time\n" "$ip" "$mb" "$name"
 }
 
 echo ""
 echo "Quota usage (saved):"
 cat /tmp/mac_counters | tr ' '  '\n' |
-while read mac; read bytes; do
-    print_quota "$bytes" "" "$mac" ""
+while read mac; read bytes; read timestamp; do
+    time=`date -I --date=@$timestamp`
+    print_quota "$bytes" "" "$mac" "" "$time"
 done
 
 echo ""
@@ -22,6 +23,6 @@ ipset save IP_QUOTA | grep -vF 255.255.255.255 | grep add | cut -d' ' -f3,7 | tr
 while read ip; read bytes; do
     mac=`cat /proc/net/arp | grep -F $ip | sed -e 's/  */ /g' | cut -d' ' -f4`
     name=`nslookup $ip | tail -1 | cut -d' ' -f4-`
-    print_quota "$bytes" "$ip" "$mac" "$name"
+    print_quota "$bytes" "$ip" "$mac" "$name" ""
 done
 echo ""
