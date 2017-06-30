@@ -1,0 +1,27 @@
+#!/bin/sh
+# Flush arp table
+#
+# arp entries tend to stick for a very long time.
+# use this to test arp entry deletion logic after disconnecting a device.
+# 
+# ip isn't installed by default, you need to
+#   opkg install ip
+# if you have enough space or extract from
+#   http://downloads.openwrt.org/chaos_calmer/15.05.1/ramips/rt305x/packages/base/ip_4.0.0-1_ramips_24kec.ipk
+# and scp ip root@router:/tmp
+#
+# Notes:
+# - arp -d doesn't work on openwrt
+# - ip -s -s neigh flush all
+#   only marks entry as stale ...
+# - ifconfig br-lan down ; ifconfig br-lan up
+#   works but wipes out ip counters ...
+
+# openwrt lan
+if=br-lan
+
+IP=ip
+[ -f /tmp/ip ] && IP=/tmp/ip
+
+$IP link set arp off dev $if
+$IP link set arp on  dev $if

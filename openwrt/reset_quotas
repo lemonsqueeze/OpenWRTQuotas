@@ -1,0 +1,6 @@
+#!/bin/sh
+
+ipset flush IP_QUOTA
+
+rm /tmp/mac_counters
+rm /tmp/arp.prev
