@@ -1,8 +1,7 @@
 #!/bin/sh
-# Fixed quota per ip, cap download once over quota
-# needs modules sch_htb sch_sfq
+# Fixed download quotas per ip, cap download once over quota
 
-# Download quota in Mb
+# download quota (Mb)
 dl_quota_mb=150
 dl_quota=$(($dl_quota_mb * 1024 * 1024))
 
