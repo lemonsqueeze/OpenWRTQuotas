@@ -40,7 +40,7 @@ cur=/tmp/arp
 prev=/tmp/arp.prev
 
 # just keep ip and mac
-parse_arp() {  grep $if | sed -e 's/  */ /g' | cut -d' ' -f1,4 ;  }
+parse_arp() {  grep $if | grep -v 00:00:00:00:00:00 | sed -e 's/  */ /g' | cut -d' ' -f1,4 ;  }
 list_arp()  {  tr ' ' '\n' ;  }
 arp_has()   {  grep -qF "$1 $2" ;  }
 mac_ips()   {  grep -F $1 | cut -d' ' -f1 ;  }
