@@ -18,9 +18,13 @@ ip_end=249
 # lan interface
 if=br-lan		# openwrt
 
-
 indexes() { seq $ip_start $ip_end; }
 run() { echo "$@"; if ! "$@"; then echo "failed !"; fi  }
+
+#######################################################################
+
+# reset tc / iptables
+run `dirname $0`/disable_quotas
 
 #######################################################################
 # Rate limit
@@ -34,14 +38,12 @@ TFA="tc filter add dev $if"
 TQA="tc qdisc add dev $if"
 SFQ="sfq perturb 10"
 
-run tc qdisc del dev $if root
 run $TQA root handle 1: htb
 for i in `indexes`; do
     run $TCA parent 1: classid 1:$i htb rate ${dl_cap}kbit ceil ${dl_cap}kbit prio 2
     run $TQA parent 1:$i handle $i: $SFQ
     run $TFA parent 1:0 prio 2 protocol ip handle $i fw flowid 1:$i
 done
-
 
 #######################################################################
 # Quota

@@ -1,0 +1,26 @@
+#!/bin/sh
+# Disable quotas
+
+# openwrt lan
+if=br-lan     # openwrt
+
+# openwrt wan
+wan=eth0.2
+
+##################################################################
+
+# reset tc
+tc qdisc del dev $if root
+
+# flush iptables
+for f in filter nat mangle; do
+ iptables -t $f -F
+ iptables -t $f -X
+ iptables -t $f -F
+done
+
+iptables -P INPUT ACCEPT
+iptables -P OUTPUT ACCEPT
+iptables -P FORWARD ACCEPT
+
+iptables -t nat -A POSTROUTING -o $wan -j MASQUERADE
