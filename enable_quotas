@@ -46,17 +46,18 @@ SFQ="sfq perturb 10"
 
 run $TQA root handle 1: htb
 for i in `indexes`; do
+    echo "creating tc classes for $lan.$i"
     id=$i
     # over quota speed limits
-    run $TCA parent 1: classid 1:$id htb rate ${dl_cap}kbit ceil ${dl_cap}kbit prio 2
-    run $TQA parent 1:$id handle $id: $SFQ
-    run $TFA parent 1:0 prio 2 protocol ip handle $id fw flowid 1:$id
+    $TCA parent 1: classid 1:$id htb rate ${dl_cap}kbit ceil ${dl_cap}kbit prio 2
+    $TQA parent 1:$id handle $id: $SFQ
+    $TFA parent 1:0 prio 2 protocol ip handle $id fw flowid 1:$id
 
     id=$(($i + 512))
     # normal speed limits
-    run $TCA parent 1: classid 1:$id htb rate ${dl_cap_max}kbit ceil ${dl_cap_max}kbit prio 2
-    run $TQA parent 1:$id handle $id: $SFQ
-    run $TFA parent 1:0 prio 2 protocol ip handle $id fw flowid 1:$id
+    $TCA parent 1: classid 1:$id htb rate ${dl_cap_max}kbit ceil ${dl_cap_max}kbit prio 2
+    $TQA parent 1:$id handle $id: $SFQ
+    $TFA parent 1:0 prio 2 protocol ip handle $id fw flowid 1:$id
 done
 
 #######################################################################
