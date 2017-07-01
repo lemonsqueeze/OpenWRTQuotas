@@ -23,6 +23,9 @@ if=br-lan		# openwrt
 
 indexes() { seq $ip_start $ip_end; }
 run() { echo "$@"; "$@"; r=$?; if [ $r != 0 ]; then echo "failed !"; fi; return $r;  }
+ipset_exists() {  ipset list $1 >/dev/null 2>&1 ;  }
+bit_set() {  [ $(( $1 & (1<<$2) )) != 0 ];  }
+
 
 #######################################################################
 
@@ -49,7 +52,7 @@ for i in `indexes`; do
     run $TQA parent 1:$id handle $id: $SFQ
     run $TFA parent 1:0 prio 2 protocol ip handle $id fw flowid 1:$id
 
-    id=$(( $i + 1000 ))
+    id=$(($i + 512))
     # normal speed limits
     run $TCA parent 1: classid 1:$id htb rate ${dl_cap_max}kbit ceil ${dl_cap_max}kbit prio 2
     run $TQA parent 1:$id handle $id: $SFQ
@@ -69,11 +72,43 @@ if  run ipset create IP_QUOTA bitmap:ip range $lan.0/24 counters; then
     run ipset add IP_QUOTA $lan.$ip_start-$lan.$ip_end
 fi
 
-IPT="iptables -t mangle -A POSTROUTING -o $if"
+# create lan ips bit sets
+if ! ipset_exists IPS_BIT0; then
+    for b in `seq 0 7`; do
+	echo "creating ipset IPS_BIT$b" 1>&2
+	echo "create IPS_BIT$b bitmap:ip range $lan.0/24"
+	for i in `indexes`; do
+	    if bit_set $i $b; then
+		echo "add IPS_BIT$b $lan.$i"
+	    fi
+	done
+    done | run ipset restore
+fi
 
-# set mark for regular download limit, 
-# if over quota, set mark for hard speed limit
-for i in `indexes`; do
-    run $IPT --dst $lan.$i -j MARK --set-mark $(( $i + 1000 ))
-    run $IPT --dst $lan.$i -m set --match-set IP_QUOTA dst --bytes-gt $dl_quota -j MARK --set-mark $i
+# check quotas and set unique mark per ip (last digit).
+# ip bit sets allow to drastically reduce number of rules needed:
+# 8 rules instead of 256 to set a unique mark with naive (but simpler):
+#   for i in `indexes`; do
+#     iptables -j MARK --set-mark $i
+#   done
+
+IPT="iptables -t mangle"
+IPT_POST="iptables -t mangle -A POSTROUTING -o $if"
+
+run $IPT -N normal
+run $IPT -N overquota
+run $IPT_POST -j MARK --set-mark 0    # just be safe
+run $IPT_POST -m set --match-set IP_QUOTA dst --bytes-lt $dl_quota -j normal
+run $IPT_POST -m set --match-set IP_QUOTA dst --bytes-gt $dl_quota -j overquota
+
+# set mark for regular download limit
+for b in `seq 0 7`; do		# set mark from ip lower bits
+    run $IPT -A normal -m set --match-set IPS_BIT$b dst -j MARK --or-mark $((1<<$b))
 done
+run $IPT -A normal -j MARK --or-mark 512
+
+# if over quota, set mark for hard speed limit
+for b in `seq 0 7`; do		# set mark from ip lower bits
+    run $IPT -A overquota -m set --match-set IPS_BIT$b dst -j MARK --or-mark $((1<<$b))
+done
+
