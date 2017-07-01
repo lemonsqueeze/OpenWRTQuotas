@@ -22,7 +22,7 @@ ip_end=249
 if=br-lan		# openwrt
 
 indexes() { seq $ip_start $ip_end; }
-run() { echo "$@"; if ! "$@"; then echo "failed !"; fi  }
+run() { echo "$@"; "$@"; r=$?; if [ $r != 0 ]; then echo "failed !"; fi; return $r;  }
 
 #######################################################################
 
@@ -61,16 +61,15 @@ done
 
 insmod nfnetlink
 insmod ip_set
-insmod ip_set_hash_ip
+insmod ip_set_bitmap_ip
 insmod xt_set
 
 # create ipset for accounting, no timeout
-run ipset create IP_QUOTA hash:ip counters
+if  run ipset create IP_QUOTA bitmap:ip range $lan.0/24 counters; then
+    run ipset add IP_QUOTA $lan.$ip_start-$lan.$ip_end
+fi
 
 IPT="iptables -t mangle -A POSTROUTING -o $if"
-
-# if ip doesn't exist in the set, add it
-run $IPT -m set ! --match-set IP_QUOTA dst -j SET --add-set IP_QUOTA dst
 
 # set mark for regular download limit, 
 # if over quota, set mark for hard speed limit

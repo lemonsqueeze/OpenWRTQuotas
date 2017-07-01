@@ -21,7 +21,7 @@ done
 
 echo ""
 echo "Quota usage (currently used):"
-ipset save IP_QUOTA | grep -vF 255.255.255.255 | grep add | cut -d' ' -f3,7 | tr ' '  '\n' |
+ipset save IP_QUOTA | grep add | grep -v 'bytes 0\|255.255.255.255' | cut -d' ' -f3,7 | tr ' '  '\n' |
 while read ip; read bytes; do
     mac=`cat /proc/net/arp | grep -F $ip | sed -e 's/  */ /g' | cut -d' ' -f4`
     name=`host_name $ip`
