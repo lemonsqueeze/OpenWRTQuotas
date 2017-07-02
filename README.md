@@ -84,8 +84,6 @@ These are for Chaos Calmer 15.05 ramips/rt305x, for other versions/arch extract 
 
 Start quotas with `enable_quota`
 
-`disable_quotas` + `enable_quotas` can be used to temporarily suspend limits (quotas are not reset)
-
 ------------------------------------------------------------------------------------
 
 ### Notes

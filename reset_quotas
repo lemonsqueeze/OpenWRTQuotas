@@ -1,7 +1,7 @@
 #!/bin/sh
 
-ipset flush IP_QUOTA
+ipset flush IP_QUOTA  2>/dev/null
 
 mac_counters=/tmp/offline_mac_counters
-rm $mac_counters
-rm /tmp/arp.prev
+rm $mac_counters  2>/dev/null
+rm /tmp/arp.prev  2>/dev/null

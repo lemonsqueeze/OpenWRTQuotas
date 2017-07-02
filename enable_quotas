@@ -6,19 +6,31 @@ config=`dirname $0`/quotas.config
 [ -f "$config" ] || die "quotas.config missing"
 source "$config"
 
+check_interface()  {  ifconfig "$1" >/dev/null 2>&1 ;  }
+check_interface "$if_lan" || die "$config: interface $if_lan doesn't exist !"
+check_interface "$if_wan" || die "$config: interface $if_wan doesn't exist !"
+lan_current=`ifconfig $if_lan | grep 'inet addr' | sed -e 's/.*:\([^ ]*\) .*/\1/' | cut -d. -f1-3 `
+[ "$lan" = "$lan_current" ] || die "$config: lan=$lan  should be $lan_current"
+
+echo "--------------------------------------------------------------------------------"
+echo "setting up download quotas: $dl_quota_mb Mb"
+echo "limiting downloads to $dl_cap_max_kb k/s (overquota: $dl_cap_kb k/s)"
+echo "for lan interface: $if_lan   range: [ $lan.$ip_start - $lan.$ip_end ]"
+echo "--------------------------------------------------------------------------------"
+echo ""
+
 indexes() { seq $ip_start $ip_end; }
 run() { echo "$@"; "$@"; r=$?; if [ $r != 0 ]; then echo "failed !"; fi; return $r;  }
-ipset_exists() {  ipset list $1 >/dev/null 2>&1 ;  }
 bit_set() {  [ $(( $1 & (1<<$2) )) != 0 ];  }
 
 
 #######################################################################
-
 # reset tc / iptables
-run `dirname $0`/disable_quotas
+echo "resetting tc iptables and ipset"
+`dirname $0`/disable_quotas
 
 #######################################################################
-# Rate limit
+# tc: create classes for each ip
 
 insmod sch_htb
 insmod sch_sfq
@@ -46,30 +58,31 @@ for i in `indexes`; do
 done
 
 #######################################################################
-# Quota
+# create ipsets
 
 insmod nfnetlink
 insmod ip_set
 insmod ip_set_bitmap_ip
+
+# ipset for accounting, no timeout
+run ipset create IP_QUOTA bitmap:ip range $lan.0/24 counters
+run ipset add IP_QUOTA $lan.$ip_start-$lan.$ip_end
+
+# lan ips bit sets
+for b in `seq 0 7`; do
+    echo "creating ipset IPS_BIT$b" 1>&2
+    echo "create IPS_BIT$b bitmap:ip range $lan.0/24"
+    for i in `indexes`; do
+	if bit_set $i $b; then
+	    echo "add IPS_BIT$b $lan.$i"
+	fi
+    done
+done | run ipset restore
+
+#######################################################################
+# iptables: check quotas and mark packets
+
 insmod xt_set
-
-# create ipset for accounting, no timeout
-if  run ipset create IP_QUOTA bitmap:ip range $lan.0/24 counters; then
-    run ipset add IP_QUOTA $lan.$ip_start-$lan.$ip_end
-fi
-
-# create lan ips bit sets
-if ! ipset_exists IPS_BIT0; then
-    for b in `seq 0 7`; do
-	echo "creating ipset IPS_BIT$b" 1>&2
-	echo "create IPS_BIT$b bitmap:ip range $lan.0/24"
-	for i in `indexes`; do
-	    if bit_set $i $b; then
-		echo "add IPS_BIT$b $lan.$i"
-	    fi
-	done
-    done | run ipset restore
-fi
 
 # check quotas and set unique mark per ip (last digit).
 # ip bit sets allow to drastically reduce number of rules needed:
