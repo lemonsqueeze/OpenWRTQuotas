@@ -27,8 +27,5 @@ iptables -P FORWARD ACCEPT
 
 iptables -t nat -A POSTROUTING -o $if_wan -j MASQUERADE
 
-# destroy ipsets
+# destroy ipset
 ipset destroy IP_QUOTA  2>/dev/null
-for b in `seq 0 7`; do
-    ipset destroy IPS_BIT$b  2>/dev/null
-done
