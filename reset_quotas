@@ -2,5 +2,6 @@
 
 ipset flush IP_QUOTA
 
-rm /tmp/mac_counters
+mac_counters=/tmp/offline_mac_counters
+rm $mac_counters
 rm /tmp/arp.prev

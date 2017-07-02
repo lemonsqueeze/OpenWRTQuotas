@@ -10,14 +10,16 @@ ipset list IP_QUOTA > /dev/null || exit 0
 if=br-lan
 
 ####################################################################################
-# mac host names table
+# mac to hostname table
 mac_names=/tmp/mac_names
 name_for_mac() {  cat $mac_names | grep -F $1 | head -1 | cut -d' ' -f2 ;  }
-host_name() {  nslookup "$1" | tail -1 | cut -d' ' -f4- ;  }
+# hostname for ip address, no spaces please
+host_name() {  nslookup "$1" | tail -1 | cut -d' ' -f4- | tr ' '  '_' ;  }
 
 ####################################################################################
-# total downloads by mac address
-mac_counters=/tmp/mac_counters
+# total downloads by mac address (offline devices)
+# format: mac bytes timestamp hostname
+mac_counters=/tmp/offline_mac_counters
 
 get_mac_counter() {  ( grep -F $1 < $mac_counters || echo $1 0 ) | cut -d' ' -f2 ;  }
 
@@ -49,7 +51,7 @@ cur=/tmp/arp
 prev=/tmp/arp.prev
 
 # just keep ip and mac
-parse_arp() {  grep $if | grep -v 00:00:00:00:00:00 | sed -e 's/  */ /g' | cut -d' ' -f1,4 ;  }
+parse_arp() {  grep $if | grep -vF 00:00:00:00:00:00 | sed -e 's/  */ /g' | cut -d' ' -f1,4 ;  }
 list_arp()  {  tr ' ' '\n' ;  }
 arp_has()   {  grep -qF "$1 $2" ;  }
 mac_ips()   {  grep -F $1 | cut -d' ' -f1 ;  }
@@ -101,13 +103,25 @@ if dup_macs $cur; then
     done
 fi
 
+####################################################################################
 # save computer names for logging
-rm $mac_names
-list_arp < $cur | while read ip ; read mac; do
-    name=`host_name $ip`
-    [ -n "$name" ] || name=`name_for_mac $mac`
-    [ -n "$name" ] && echo "$mac $name" >> $mac_names
-done
 
+current_names()
+{
+    list_arp < $cur | while read ip ; read mac; do
+	name=`host_name $ip`
+	[ -n "$name" ] && echo "$mac $name"
+    done
+}
+
+saved_names() {  cat $mac_names 2>/dev/null;  }
+
+# merge current and saved names (keep latest)
+AWK_MERGE_NAMES='{ name[$1]=$2; } END{ for (mac in name){ print mac " " name[mac]; } }'
+(  saved_names;  current_names  )  | awk "$AWK_MERGE_NAMES" > /tmp/mac_names_
+mv /tmp/mac_names_ $mac_names
+
+####################################################################################
+# done !
 
 mv $cur $prev
