@@ -1,6 +1,11 @@
 #!/bin/sh
 # Save quotas
 
+header="mac_address       quota   timestamp  name"
+echo "$header"
+
+####################################################################################
+
 # mac to hostname table
 mac_names=/tmp/mac_names
 name_for_mac() {  cat $mac_names | grep -F $1 | head -1 | cut -d' ' -f2 ;  }

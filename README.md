@@ -75,10 +75,12 @@ These are for Chaos Calmer 15.05 ramips/rt305x, for other versions/arch extract 
 
 ### Usage
 
-    enable_quotas    Enable limits and quotas  
-    disable_quotas   Disable limits and quotas  
-    reset_quotas     Clear all quotas  
-    list_quotas      Show current usage  
+    enable_quotas         Enable limits and quotas  
+    disable_quotas        Disable limits and quotas  (current usage is lost!)
+    save_quotas           Backup current quotas to stdout
+    load_quotas  <file>   Restore quotas saved with save_quotas
+    reset_quotas          Clear everyone's quotas
+    list_quotas           Show current usage  
 
 Start quotas with `enable_quota`
 
@@ -91,7 +93,7 @@ Start quotas with `enable_quota`
 Currently replaces OpenWrt's firewall rules. if you have have custom rules or create some through
 web interface they will get wiped out. It makes sense to disable the firewall service in OpenWrt's interface.
 
-Quotas are lost on reboot
+Quotas are lost on reboot. Save / restore them with save_quotas / load_quotas.
 
 This is by no means completely secure:  
 - Mac addresses can be changed, if a guest does so he'll get a brand new quota.  

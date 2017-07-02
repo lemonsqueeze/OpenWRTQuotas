@@ -11,7 +11,7 @@ print_quota()
 
 echo ""
 echo "Quota usage:"
-`dirname $0`/save_quotas | tr ' '  '\n' |
+`dirname $0`/save_quotas | tail +2 | tr ' '  '\n' |
 while read mac; read bytes; read timestamp; read name; do
     time=`date -I --date=@$timestamp`
     print_quota "$mac" "$bytes" "$time" "$name"
