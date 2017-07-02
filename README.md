@@ -33,7 +33,7 @@ What you need:
 - Ipset support (tested with Chaos Calmer 15.05 but any release should do)
 
 Installation:
-- Flash OpenWrt firmware
+- Flash OpenWrt firmware, configure router
 - Login through ssh and install packages on the router:
 
         opkg update
@@ -41,11 +41,11 @@ Installation:
         opkg install ipset
         opkg install ip       # optional, for testing
 
-- Install scripts in /root:
+- Edit `quotas.config`, set limits and lan ip address range (should include your dhcp range, preferrably the whole local network)
 
-        scp disable_quotas enable_quotas flush_arp list_quotas reset_quotas track_mac_usage root@192.168.1.1:~/
+- Install files in /root:
 
-- Edit `enable_quota`, set limits and lan ip address range (should include your dhcp range, preferrably the whole local network)
+        scp *_quotas quotas.config track_mac_usage root@192.168.1.1:~/
 
 - Create [crontab](https://raw.githubusercontent.com/lemonsqueeze/WifiDownloadQuotas/master/conf/crontab)
   either from web interface or `crontab -e`

@@ -1,16 +1,15 @@
 #!/bin/sh
 # Disable quotas
 
-# openwrt lan
-if=br-lan     # openwrt
-
-# openwrt wan
-wan=eth0.2
+die()   {  echo "$@"; exit 1;  }
+config=`dirname $0`/quotas.config
+[ -f "$config" ] || die "quotas.config missing"
+source "$config"
 
 ##################################################################
 
 # reset tc
-tc qdisc del dev $if root
+tc qdisc del dev $if_lan root
 
 # flush iptables
 for f in filter nat mangle; do
@@ -23,4 +22,4 @@ iptables -P INPUT ACCEPT
 iptables -P OUTPUT ACCEPT
 iptables -P FORWARD ACCEPT
 
-iptables -t nat -A POSTROUTING -o $wan -j MASQUERADE
+iptables -t nat -A POSTROUTING -o $if_wan -j MASQUERADE

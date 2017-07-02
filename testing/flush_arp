@@ -17,11 +17,13 @@
 # - ifconfig br-lan down ; ifconfig br-lan up
 #   works but wipes out ip counters ...
 
-# openwrt lan
-if=br-lan
+die()   {  echo "$@"; exit 1;  }
+config=`dirname $0`/quotas.config
+[ -f "$config" ] || die "quotas.config missing"
+source "$config"
 
 IP=ip
 [ -f /tmp/ip ] && IP=/tmp/ip
 
-$IP link set arp off dev $if
-$IP link set arp on  dev $if
+$IP link set arp off dev $if_lan
+$IP link set arp on  dev $if_lan

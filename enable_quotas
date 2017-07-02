@@ -1,25 +1,10 @@
 #!/bin/sh
 # Fixed download quotas per ip, cap download once over quota
 
-# download quota (Mb)
-dl_quota_mb=150
-dl_quota=$(($dl_quota_mb * 1024 * 1024))
-
-# max download speed (k/s)
-dl_cap_max_kb=100
-dl_cap_max=$(($dl_cap_max_kb * 8))
-
-# max download speed once over quota (k/s)
-dl_cap_kb=50
-dl_cap=$(($dl_cap_kb * 8))
-
-# lan addresses to limit (make sure it includes dhcp range)
-lan=192.168.1
-ip_start=100
-ip_end=249
-
-# lan interface
-if=br-lan		# openwrt
+die()   {  echo "$@"; exit 1;  }
+config=`dirname $0`/quotas.config
+[ -f "$config" ] || die "quotas.config missing"
+source "$config"
 
 indexes() { seq $ip_start $ip_end; }
 run() { echo "$@"; "$@"; r=$?; if [ $r != 0 ]; then echo "failed !"; fi; return $r;  }
@@ -39,9 +24,9 @@ insmod sch_htb
 insmod sch_sfq
 insmod cls_fw
 
-TCA="tc class add dev $if"
-TFA="tc filter add dev $if"
-TQA="tc qdisc add dev $if"
+TCA="tc class add dev $if_lan"
+TFA="tc filter add dev $if_lan"
+TQA="tc qdisc add dev $if_lan"
 SFQ="sfq perturb 10"
 
 run $TQA root handle 1: htb
@@ -94,7 +79,7 @@ fi
 #   done
 
 IPT="iptables -t mangle"
-IPT_POST="iptables -t mangle -A POSTROUTING -o $if"
+IPT_POST="iptables -t mangle -A POSTROUTING -o $if_lan"
 
 run $IPT -N normal
 run $IPT -N overquota

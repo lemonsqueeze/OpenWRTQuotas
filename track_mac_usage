@@ -3,16 +3,21 @@
 # Watch arp table and save/restore ip counters when it changes
 # Run this every minute in cron
 
+die()   {  echo "$@"; exit 1;  }
+config=`dirname $0`/quotas.config
+[ -f "$config" ] || die "quotas.config missing"
+source "$config"
+
+
 # don't do anything if quota isn't setup
 ipset list IP_QUOTA > /dev/null || exit 0
 
-# lan interface
-if=br-lan
-
 ####################################################################################
 # mac to hostname table
+
 mac_names=/tmp/mac_names
 name_for_mac() {  cat $mac_names | grep -F $1 | head -1 | cut -d' ' -f2 ;  }
+
 # hostname for ip address, no spaces please
 host_name() { 
     name=`nslookup "$1" | tail -1 | cut -d' ' -f4- | tr ' '  '_' `
@@ -55,7 +60,7 @@ cur=/tmp/arp
 prev=/tmp/arp.prev
 
 # just keep ip and mac
-parse_arp() {  grep $if | grep -vF 00:00:00:00:00:00 | sed -e 's/  */ /g' | cut -d' ' -f1,4 ;  }
+parse_arp() {  grep $if_lan < /proc/net/arp | grep -vF 00:00:00:00:00:00 | sed -e 's/  */ /g' | cut -d' ' -f1,4 ;  }
 list_arp()  {  tr ' ' '\n' ;  }
 arp_has()   {  grep -qF "$1 $2" ;  }
 mac_ips()   {  grep -F $1 | cut -d' ' -f1 ;  }
@@ -64,7 +69,7 @@ dup_macs()  {  [ -f $1 ] && [ `wc -l < $1` != `list_macs < $1 | wc -l` ];  }
 
 ####################################################################################
 
-parse_arp < /proc/net/arp > $cur
+parse_arp > $cur
 
 # save usage of mac addresses which disappeared
 list_arp < $prev | while read ip ; read mac; do
