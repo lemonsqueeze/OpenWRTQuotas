@@ -1,0 +1,10 @@
+ip
+ipset
+iptables-mod-ipopt
+kmod-ipt-ipopt
+kmod-ipt-ipset
+kmod-nfnetlink
+kmod-sched
+kmod-sched-core
+libmnl
+tc

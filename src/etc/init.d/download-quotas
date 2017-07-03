@@ -1,0 +1,33 @@
+#!/bin/sh /etc/rc.common
+# Download quotas
+ 
+START=99
+STOP=10
+
+EXTRA_COMMANDS="save load reset list"
+EXTRA_HELP=<<EOF
+        save  Save current quotas usage
+        load  Load saved quotas usage
+        reset Reset all quotas usage
+        list  List current quotas usage
+EOF
+
+saved_quotas=/root/.download_quotas
+
+boot()  {  sleep 20; start;  }
+start() {  /etc/init.d/cron start
+           dir="/var/download_quotas"
+	   [ -d $dir ] || mkdir $dir	   
+	   echo "Enabling quotas ..."
+           /usr/share/download_quotas/enable_quotas 2>&1 | tee $dir/enable_quotas.log
+	   [ -f $saved_quotas ] && load;  }
+stop()  {  
+           save
+	   echo "Disabling quotas ..."
+           /usr/share/download_quotas/disable_quotas;  }
+save()  {  echo "Saving current quotas ..."
+           /usr/share/download_quotas/save_quotas $saved_quotas;  }
+load()  {  echo "Loading saved quotas ..."
+           /usr/share/download_quotas/load_quotas $saved_quotas;  }
+reset() {  /usr/share/download_quotas/reset_quotas;  }
+list()  {  /usr/share/download_quotas/list_quotas;  }

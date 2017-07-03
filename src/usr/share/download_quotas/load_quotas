@@ -1,36 +1,31 @@
 #!/bin/sh
 # load quotas
 
-source `dirname $0`/quotas.config
-source `dirname $0`/common
+source /etc/download_quotas.conf
+source /usr/share/download_quotas/common
 
-####################################################################################
-# sanity checks
+[ -f $status_file ] || die "download quotas are disabled"
 
 usage() {  die "usage: load_quotas file";  }
 [ -f "$1" ] || usage
 
-header="mac_address       quota   timestamp  name"
 h=`head -1 "$1"`
 [ "$h" = "$header" ] || die "invalid file"
 
-# be safe, backup current quotas
-`dirname $0`/save_quotas > $dir/_quotas.backup || die "quota backup failed"
-
 ####################################################################################
 
-echo "restoring mac quotas ..."
+#echo "restoring mac quotas ..."
 tail +2 "$1" > $mac_counters
 
 ####################################################################################
 
-echo ""
-echo "restoring ip quotas ..."
+#echo ""
+#echo "restoring ip quotas ..."
 ipset flush IP_QUOTA 
 parse_arp | list_arp | while read ip ; read mac; do
     quota=`grep -F $mac < "$1" | cut -d' ' -f2 `
     [ -z "$quota" ] && continue
-    echo "  $ip -> $quota" 1&>2
+    #echo "  $ip -> $quota" 1>&2
     echo "add IP_QUOTA $ip packets 0 bytes $quota"
 done | ipset restore 
 

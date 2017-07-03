@@ -1,0 +1,15 @@
+#!/bin/sh
+# add crontab entry
+( crontab -l 2>/dev/null | grep -v 'download.quotas'
+  cat <<'EOF'
+
+# download_quotas:
+  *     *   *   *   *    /usr/share/download_quotas/track_mac_usage    # update quotas per mac address
+  */30  *   *   *   *    /etc/init.d/download-quotas save              # save quotas every 30mins
+  *     *   1   *   *    /etc/init.d/download-quotas reset             # reset quotas every month
+
+EOF
+) | crontab -
+
+/etc/init.d/cron enable
+exit 0

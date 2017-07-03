@@ -3,11 +3,11 @@
 # Watch arp table and save/restore ip counters when it changes
 # Run this every minute in cron
 
-source `dirname $0`/quotas.config
-source `dirname $0`/common
+source /etc/download_quotas.conf
+source /usr/share/download_quotas/common
 
-# don't do anything if quota isn't setup
-ipset list IP_QUOTA > /dev/null || exit 0
+# don't do anything if quotas aren't enabled
+[ -f $status_file ] || exit 0
 
 ####################################################################################
 

@@ -1,8 +1,11 @@
 #!/bin/sh
 # Fixed download quotas per ip, cap download once over quota
 
-source `dirname $0`/quotas.config
-source `dirname $0`/common
+config=/etc/download_quotas.conf
+source $config
+source /usr/share/download_quotas/common
+
+[ -f $status_file ] && die "download quotas already enabled"
 
 check_interface "$if_lan" || die "$config: interface $if_lan doesn't exist !"
 check_interface "$if_wan" || die "$config: interface $if_wan doesn't exist !"
@@ -77,5 +80,7 @@ for i in `ip_indexes`; do
     $IPT -A overquota --dst $lan.$i -j CLASSIFY --set-class 1:$i
     $IPT -A normal    --dst $lan.$i -j CLASSIFY --set-class 1:$(($i + 512))
 done
+
+touch $status_file
 
 echo "done !"

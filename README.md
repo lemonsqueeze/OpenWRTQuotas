@@ -1,6 +1,9 @@
 Shared wifi download quotas
 ===========================
 
+Implements download quotas per mac address on a Linux router.  
+At the moment it focuses on [OpenWrt](http://openwrt.org) but shouldn't be hard to make it work on other distributions.
+
 ### Scenario
 
 You have a linux router on shared wifi with many guests,
@@ -26,7 +29,6 @@ we just need to keep track of mac-ip pairs (track_mac_usage, which runs every mi
 
 ### Installation
 
-At the moment it focuses on [OpenWrt](http://openwrt.org) but shouldn't be hard to make it work on other distributions.
 
 What you need:  
 - Wifi router supported by OpenWrt (8Mb flash better)
@@ -34,55 +36,55 @@ What you need:
 
 Installation:
 - Flash OpenWrt firmware, configure router
-- Login through ssh and install packages on the router:
+- clone repository, build package:
 
+        make
+
+- send package to the router:
+
+        scp download-quotas_0.1.1.ipk root@192.168.1.1:/tmp/
+
+- Login through ssh and install package:
+
+        cd /tmp
         opkg update
-        opkg install tc
-        opkg install ipset
-        opkg install ip       # optional, for testing
+        opkg install download-quotas_0.1.1.ipk
 
-- Edit `quotas.config`, set limits and lan ip address range (should include your dhcp range, preferrably the whole local network)
+- Edit `/etc/download_quotas.conf`, set limits and lan ip address range (should include your dhcp range, preferrably the whole local network)
 
-- Install files in /root:
+- Enable download-quotas service:
 
-        scp *_quotas quotas.config track_mac_usage root@192.168.1.1:~/
-
-- Create [crontab](https://raw.githubusercontent.com/lemonsqueeze/WifiDownloadQuotas/master/conf/crontab)
-  either from web interface or `crontab -e`
-- Start and enable crontab with:
-
-        /etc/init.d/cron start
-        /etc/init.d/cron enable
+        /etc/init.d/download-quotas enable
 
 Notes:
 
-If you have 4Mb flash don't use opkg, you'll most likely run out of space.  
-You probably have enough to store just the
-[needed files](https://github.com/lemonsqueeze/WifiDownloadQuotas/tree/master/extra_files) though.  
-These are for Chaos Calmer 15.05 ramips/rt305x, for other versions/arch extract them from their resp. packages:
+If you have 4Mb flash you'll most likely run out of space with the default package, the dependencies are too big.  
+You probably have enough for a selfcontained build though:  
 
-    ipset
-    iptables-mod-ipopt
-    kmod-ipt-ipopt
-    kmod-ipt-ipset
-    kmod-nfnetlink
-    kmod-sched-core
-    kmod-sched
-    libmnl
-    tc
+- Edit Makefile and set `ARCH` `TARGET` and `RELEASE` for your router.  
+  Values can be found in `/etc/openwrt_release`.  
+  For `ARCH` try `opkg info busybox | grep Architecture`
+
+- instead of `make` type
+
+        make selfcontained
+
+- scp and install self-contained package instead (`download-quotas_0.1.1_ramips_24kec.ipk` for example)
+
 
 ------------------------------------------------------------------------------------
 
 ### Usage
 
-    enable_quotas         Enable limits and quotas  
-    disable_quotas        Disable limits and quotas  (current usage is lost!)
-    save_quotas           Backup current quotas to stdout
-    load_quotas  <file>   Restore quotas saved with save_quotas
-    reset_quotas          Clear everyone's quotas
-    list_quotas           Show current usage  
+    /etc/init.d/download-quotas start    Enable limits and quotas and load saved usage
+    /etc/init.d/download-quotas stop     Disable limits and quotas and save current usage
+    /etc/init.d/download-quotas save     Backup current usage to /root/.download_quotas
+    /etc/init.d/download-quotas load     Restore saved usage
+    /etc/init.d/download-quotas reset    Clear everyone's quotas
+    /etc/init.d/download-quotas list     Show current usage  
 
-Start quotas with `enable_quota`
+By default quotas start automatically on boot, are saved every 30 mins and reset once a month (see crontab)
+
 
 ------------------------------------------------------------------------------------
 
@@ -91,13 +93,17 @@ Start quotas with `enable_quota`
 Currently replaces OpenWrt's firewall rules. if you have have custom rules or create some through
 web interface they will get wiped out. It makes sense to disable the firewall service in OpenWrt's interface.
 
-Quotas are lost on reboot. Save / restore them with save_quotas / load_quotas.
+This is by no means absolutely secure, however with a typical group of non-hostile guests it works very well:  
 
-This is by no means completely secure:  
 - Mac addresses can be changed, if a guest does so he'll get a brand new quota.  
 - Limits only kick in for ip range specified in `enable_quota`. If you left addresses out
   a guest can bypass limits by using one of these ips (could be a feature too if you need
-  priviledged users. A better way would be to add special rules for them)
+  priviledged users. A better way would be to add special rules for them)  
+- The mac/ip tracking logic runs every minute so when a pairing changes there's a window of
+  at most 1 minute where a guest could be running on someone else's quota. Pairing changes are
+  rare enough and in the worst case, at 100k/s the potential for abuse is small enough that
+  it doesn't matter here.
+
 
 [Gargoyle](https://www.gargoyle-router.com/) can do download quotas,
   interface is very nice and users can see their quota usage on the front page.

@@ -1,0 +1,36 @@
+#!/bin/bash
+
+RELEASE="$1"
+ARCH="$2"
+
+die() {  echo "$@"; exit 1;  }
+get() {  [ -f "$1" ] && return 0; 
+         echo "get $2"
+         if ! wget --quiet -O "$1" "$2"; then
+	     rm "$1"; die "wget failed, aborting"
+	 fi
+      }
+
+cd selfcontained
+rm -rf tmp packages data ../src_extra
+mkdir  tmp packages data 
+
+url="http://downloads.openwrt.org/$RELEASE/$ARCH/packages/base"
+get Packages "$url/Packages"
+./package_filenames < Packages > filenames
+cat deps | while read f; do
+    filename=`cat filenames | grep "^$f " | cut -d' ' -f2`
+    get packages/$f.ipk "$url/$filename"
+    echo "extracting $f.ipk"
+    cd tmp
+    tar -xzf ../packages/$f.ipk
+    cd ../data
+    tar -xzf ../tmp/data.tar.gz
+    cd ..
+    rm tmp/*
+done
+
+cd data
+echo "packing needed files"
+mkdir ../../src_extra
+tar -cT ../needed_files -f - | (cd ../../src_extra; tar -xf -)

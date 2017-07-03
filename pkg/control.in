@@ -1,0 +1,11 @@
+Package: download-quotas
+Version: VERSION
+Depends: DEPENDS
+Source: 
+License: GPL-2.0
+Section: net
+Maintainer: lemonsqueeze <lemonsqueeze@gmx.com>
+Architecture: ARCH
+Installed-Size: SIZE
+Description:  Wifi download quotas
+Homepage: http://github.com/lemonsqueeze/WifiDownloadQuotas

@@ -1,6 +1,11 @@
+# download quotas common
 
-# dir to store our files
-dir=/tmp
+# dir to store runtime files
+dir=/var/download_quotas
+[ -d "$dir" ] || mkdir $dir
+
+# created when service is running
+status_file=$dir/running
 
 ####################################################################################
 
@@ -11,13 +16,13 @@ check_interface()  {  ifconfig "$1" >/dev/null 2>&1 ;  }
 ip_indexes()       {  seq $ip_start $ip_end;  }
 
 ####################################################################################
-# save / restore header
+# save / load header
 header="mac_address       quota   timestamp  name"
 
 ####################################################################################
 # mac to hostname table
 
-mac_hostnames=/tmp/mac_hostnames
+mac_hostnames=$dir/mac_hostnames
 name_for_mac() {  cat $mac_hostnames | grep -F $1 | head -1 | cut -d' ' -f2 ;  }
 
 # hostname for ip address, no spaces please
@@ -34,14 +39,14 @@ ip_counters() {  ipset save IP_QUOTA | grep add | grep -v 'bytes 0\|255.255.255.
 ####################################################################################
 # total downloads by mac address (offline devices)
 # format: mac bytes timestamp hostname
-mac_counters=/tmp/offline_mac_counters
+mac_counters=$dir/offline_mac_counters
 
 get_mac_counter() {  ( grep -F $1 < $mac_counters || echo $1 0 ) | cut -d' ' -f2 ;  }
 
 set_mac_counter()
 { 
     mac=$1;  count=$2
-    tmp=/tmp/mac_counters_
+    tmp=$dir/mac_counters_
     timestamp=`date +"%s"`
     name=`name_for_mac $mac`
     grep -vF $mac < $mac_counters > $tmp
@@ -65,7 +70,7 @@ set_ip_counter() {  ipset add -exist IP_QUOTA $1 bytes $2 ;  }
 # current / previous arp tables
 
 # arp table from last trac_mac_usage run
-saved_arp=/tmp/arp.prev
+saved_arp=$dir/arp.prev
 
 # just keep ip and mac
 parse_arp() {  grep $if_lan < /proc/net/arp | grep -vF 00:00:00:00:00:00 | sed -e 's/  */ /g' | cut -d' ' -f1,4 ;  }

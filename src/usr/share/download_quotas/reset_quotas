@@ -1,6 +1,8 @@
 #!/bin/sh
 
-source `dirname $0`/common
+source /usr/share/download_quotas/common
+
+[ -f $status_file ] || die "download quotas are disabled"
 
 ipset flush IP_QUOTA  2>/dev/null
 

@@ -1,12 +1,20 @@
 #!/bin/sh
-# Save quotas
+# Save quotas to stdout
 
-source `dirname $0`/quotas.config
-source `dirname $0`/common
+source /etc/download_quotas.conf
+source /usr/share/download_quotas/common
 
-echo "$header"
+[ -f $status_file ] || die "download quotas are disabled"
+
+file="$1"
+[ "$file" = "-" ] && file="/proc/$$/fd/1"
+
+usage() {  die "usage: save_quotas file";  }
+[ -n "$file" ] || usage
 
 ####################################################################################
+
+echo "$header" > "$file"
 
 timestamp=`date +"%s"`
 dump_online_quotas()
@@ -35,4 +43,4 @@ AWK_MERGE_QUOTAS='
   }
 '
 
-(  dump_offline_quotas;  dump_online_quotas  ) | awk "$AWK_MERGE_QUOTAS"
+(  dump_offline_quotas;  dump_online_quotas  ) | awk "$AWK_MERGE_QUOTAS" >> "$file"

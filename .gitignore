@@ -1,1 +1,10 @@
 *~
+*.ipk
+pkg/control
+pkg/control.tar.gz
+pkg/data.tar.gz
+pkg/size
+selfcontained/Packages
+selfcontained/data/
+selfcontained/filenames
+src_extra/

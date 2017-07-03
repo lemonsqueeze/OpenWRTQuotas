@@ -1,0 +1,9 @@
+#!/usr/bin/perl
+
+my $name;
+foreach my $s (<STDIN>)
+{
+    chomp($s);
+    if ($s =~ m/^Package: *([^ ]+)/)  {  $name=$1;  }
+    if ($s =~ m/^Filename: *([^ ]+)/) {  print "$name $1\n";  }
+}

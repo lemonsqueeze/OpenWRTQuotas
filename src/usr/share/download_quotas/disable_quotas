@@ -1,13 +1,18 @@
 #!/bin/sh
 # Disable quotas
 
-source `dirname $0`/quotas.config
-source `dirname $0`/common
+source /etc/download_quotas.conf
+source /usr/share/download_quotas/common
+
+[ -f $status_file ] || die "download quotas are already disabled"
 
 ##################################################################
 
 # reset quotas
 `dirname $0`/reset_quotas
+
+# remove status file
+rm $status_file
 
 # reset tc
 tc qdisc del dev $if_lan root
