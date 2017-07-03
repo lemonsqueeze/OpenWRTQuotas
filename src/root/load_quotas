@@ -1,10 +1,8 @@
 #!/bin/sh
 # load quotas
 
-die()   {  echo "$@"; exit 1;  }
-config=`dirname $0`/quotas.config
-[ -f "$config" ] || die "quotas.config missing"
-source "$config"
+source `dirname $0`/quotas.config
+source `dirname $0`/common
 
 ####################################################################################
 # sanity checks
@@ -17,17 +15,14 @@ h=`head -1 "$1"`
 [ "$h" = "$header" ] || die "invalid file"
 
 # be safe, backup current quotas
-`dirname $0`/save_quotas > /tmp/_quotas.backup || die "quota backup failed"
+`dirname $0`/save_quotas > $dir/_quotas.backup || die "quota backup failed"
 
 ####################################################################################
 
 echo "restoring mac quotas ..."
-tail +2 "$1" > /tmp/offline_mac_counters
+tail +2 "$1" > $mac_counters
 
 ####################################################################################
-
-parse_arp() {  grep $if_lan < /proc/net/arp | grep -vF 00:00:00:00:00:00 | sed -e 's/  */ /g' | cut -d' ' -f1,4 ;  }
-list_arp()  {  tr ' ' '\n' ;  }
 
 echo ""
 echo "restoring ip quotas ..."

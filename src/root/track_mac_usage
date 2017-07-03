@@ -1,0 +1,81 @@
+#!/bin/sh
+# Keep track of download usage by mac adress:
+# Watch arp table and save/restore ip counters when it changes
+# Run this every minute in cron
+
+source `dirname $0`/quotas.config
+source `dirname $0`/common
+
+# don't do anything if quota isn't setup
+ipset list IP_QUOTA > /dev/null || exit 0
+
+####################################################################################
+
+cur=$dir/arp
+prev=$saved_arp
+
+parse_arp > $cur
+
+# save usage of mac addresses which disappeared
+list_arp < $prev | while read ip ; read mac; do
+    if ! arp_has $ip $mac < $cur; then
+	count=`get_ip_counter $ip`
+	echo "saving $ip $mac: $count"
+	set_mac_counter $mac $count
+	set_ip_counter $ip 0
+    fi
+done
+
+# restore new mac addresses ip counter
+list_arp < $cur | while read ip ; read mac; do
+    if ! arp_has $ip $mac < $prev; then
+	mac_count=`get_mac_counter $mac`  # saved mac usage
+	ip_count=`get_ip_counter $ip`     # bytes transferred since we last run
+	count=$(( $mac_count + $ip_count ))	
+	echo "new $ip $mac: setting count $count"
+	set_ip_counter $ip $count
+    fi
+done
+
+# messy case: multiple arp entries for a mac.
+# if mac changes ip somehow, replicate ip counters
+if dup_macs $cur; then 
+    for mac in `list_macs < $cur`; do
+	[ `mac_ips $mac < $cur | wc -l` = 1 ] && continue
+	
+	max_count=0
+	ips=`mac_ips $mac < $cur`
+	for ip in $ips; do
+	    count=`get_ip_counter $ip`
+	    [ $count -gt $max_count ] && max_count=$count
+	done
+	
+	for ip in $ips; do
+	    echo "dup $ip $mac: setting count $max_count"
+	    set_ip_counter $ip $max_count
+	done
+    done
+fi
+
+####################################################################################
+# save computer names for logging
+
+current_hostnames()
+{
+    list_arp < $cur | while read ip ; read mac; do
+	name=`host_name $ip`
+	[ -n "$name" ] && echo "$mac $name"
+    done
+}
+
+saved_hostnames() {  cat $mac_hostnames 2>/dev/null;  }
+
+# merge current and saved hostnames (keep latest)
+AWK_MERGE_NAMES='{ name[$1]=$2; } END{ for (mac in name){ print mac " " name[mac]; } }'
+(  saved_hostnames;  current_hostnames  )  | awk "$AWK_MERGE_NAMES" > $dir/mac_hostnames_
+mv $dir/mac_hostnames_ $mac_hostnames
+
+####################################################################################
+# done !
+
+mv $cur $prev

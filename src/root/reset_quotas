@@ -1,7 +1,8 @@
 #!/bin/sh
 
+source `dirname $0`/common
+
 ipset flush IP_QUOTA  2>/dev/null
 
-mac_counters=/tmp/offline_mac_counters
 rm $mac_counters  2>/dev/null
-rm /tmp/arp.prev  2>/dev/null
+rm $saved_arp  2>/dev/null

@@ -1,12 +1,9 @@
 #!/bin/sh
 # Fixed download quotas per ip, cap download once over quota
 
-die()   {  echo "$@"; exit 1;  }
-config=`dirname $0`/quotas.config
-[ -f "$config" ] || die "quotas.config missing"
-source "$config"
+source `dirname $0`/quotas.config
+source `dirname $0`/common
 
-check_interface()  {  ifconfig "$1" >/dev/null 2>&1 ;  }
 check_interface "$if_lan" || die "$config: interface $if_lan doesn't exist !"
 check_interface "$if_wan" || die "$config: interface $if_wan doesn't exist !"
 lan_current=`ifconfig $if_lan | grep 'inet addr' | sed -e 's/.*:\([^ ]*\) .*/\1/' | cut -d. -f1-3 `
@@ -18,11 +15,6 @@ echo "limiting downloads to $dl_cap_max_kb k/s (overquota: $dl_cap_kb k/s)"
 echo "for lan interface: $if_lan   range: [ $lan.$ip_start - $lan.$ip_end ]"
 echo "--------------------------------------------------------------------------------"
 echo ""
-
-indexes() {  seq $ip_start $ip_end;  }
-run()     {  echo "$@"; "$@"; r=$?; if [ $r != 0 ]; then echo "failed !"; fi; return $r;  }
-bit_set() {  [  $(( $1 & (1<<$2) )) != 0 ];  }
-
 
 #######################################################################
 # reset tc / iptables
@@ -41,7 +33,7 @@ TQA="tc qdisc add dev $if_lan"
 SFQ="sfq perturb 10"
 
 run $TQA root handle 1: htb
-for i in `indexes`; do
+for i in `ip_indexes`; do
     echo "creating tc classes for $lan.$i"
     id=$i
     # over quota speed limits
@@ -80,7 +72,7 @@ run $IPT_POST -m set --match-set IP_QUOTA dst --bytes-gt $dl_quota -g overquota
 run $IPT_POST -m set --match-set IP_QUOTA dst ! --update-counters -g normal
 
 # classify packets
-for i in `indexes`; do
+for i in `ip_indexes`; do
     echo "creating iptables rules for $lan.$i"
     $IPT -A overquota --dst $lan.$i -j CLASSIFY --set-class 1:$i
     $IPT -A normal    --dst $lan.$i -j CLASSIFY --set-class 1:$(($i + 512))

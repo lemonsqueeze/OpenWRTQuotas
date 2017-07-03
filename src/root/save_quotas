@@ -1,25 +1,10 @@
 #!/bin/sh
 # Save quotas
 
-header="mac_address       quota   timestamp  name"
+source `dirname $0`/quotas.config
+source `dirname $0`/common
+
 echo "$header"
-
-####################################################################################
-
-# mac to hostname table
-mac_names=/tmp/mac_names
-name_for_mac() {  cat $mac_names | grep -F $1 | head -1 | cut -d' ' -f2 ;  }
-
-# hostname for ip address, no spaces please
-host_name() {
-    name=`nslookup "$1" | tail -1 | cut -d' ' -f4- | tr ' '  '_' `
-    [ -z "$name" ] && name=`grep -F "$1 " < /tmp/dhcp.leases | cut -d' ' -f4`
-    echo "$name"
-}
-
-mac_for_ip()  {  grep -F "$1 " < /proc/net/arp | grep -vF 00:00:00:00:00:00 |
-                    sed -e 's/  */ /g' | cut -d' ' -f4 ;  }
-ip_counters() {  ipset save IP_QUOTA | grep add | grep -v 'bytes 0\|255.255.255.255' | cut -d' ' -f3,7 ;  }
 
 ####################################################################################
 
@@ -34,9 +19,6 @@ dump_online_quotas()
 	echo "$mac" "$bytes" "$timestamp" "$name"
     done    
 }
-
-# offline devices quotas
-mac_counters=/tmp/offline_mac_counters
 
 dump_offline_quotas() {  cat $mac_counters 2>/dev/null;  }
 

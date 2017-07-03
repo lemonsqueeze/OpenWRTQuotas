@@ -1,0 +1,81 @@
+
+# dir to store our files
+dir=/tmp
+
+####################################################################################
+
+die()   {  echo "$@"; exit 1;  }
+run()   {  echo "$@"; "$@"; r=$?; if [ $r != 0 ]; then echo "failed !"; fi; return $r;  }
+
+check_interface()  {  ifconfig "$1" >/dev/null 2>&1 ;  }
+ip_indexes()       {  seq $ip_start $ip_end;  }
+
+####################################################################################
+# save / restore header
+header="mac_address       quota   timestamp  name"
+
+####################################################################################
+# mac to hostname table
+
+mac_hostnames=/tmp/mac_hostnames
+name_for_mac() {  cat $mac_hostnames | grep -F $1 | head -1 | cut -d' ' -f2 ;  }
+
+# hostname for ip address, no spaces please
+host_name() { 
+    name=`nslookup "$1" | tail -1 | cut -d' ' -f4- | tr ' '  '_' `
+    [ -z "$name" ] && name=`grep -F "$1 " < /tmp/dhcp.leases | cut -d' ' -f4`
+    echo "$name"
+}
+
+mac_for_ip()  {  grep -F "$1 " < /proc/net/arp | grep -vF 00:00:00:00:00:00 |
+                    sed -e 's/  */ /g' | cut -d' ' -f4 ;  }
+ip_counters() {  ipset save IP_QUOTA | grep add | grep -v 'bytes 0\|255.255.255.255' | cut -d' ' -f3,7 ;  }
+
+####################################################################################
+# total downloads by mac address (offline devices)
+# format: mac bytes timestamp hostname
+mac_counters=/tmp/offline_mac_counters
+
+get_mac_counter() {  ( grep -F $1 < $mac_counters || echo $1 0 ) | cut -d' ' -f2 ;  }
+
+set_mac_counter()
+{ 
+    mac=$1;  count=$2
+    tmp=/tmp/mac_counters_
+    timestamp=`date +"%s"`
+    name=`name_for_mac $mac`
+    grep -vF $mac < $mac_counters > $tmp
+    echo $mac $count $timestamp "$name" >> $tmp
+    mv $tmp $mac_counters
+}
+
+####################################################################################
+# get/set ip counters
+
+get_ip_counter()
+{
+    ( ipset save IP_QUOTA | grep -F "$1 " || 
+      echo "add IP_QUOTA $1 packets 0 bytes 0" ) | cut -d' ' -f 7
+}
+
+set_ip_counter() {  ipset add -exist IP_QUOTA $1 bytes $2 ;  }
+
+
+####################################################################################
+# current / previous arp tables
+
+# arp table from last trac_mac_usage run
+saved_arp=/tmp/arp.prev
+
+# just keep ip and mac
+parse_arp() {  grep $if_lan < /proc/net/arp | grep -vF 00:00:00:00:00:00 | sed -e 's/  */ /g' | cut -d' ' -f1,4 ;  }
+list_arp()  {  tr ' ' '\n' ;  }
+arp_has()   {  grep -qF "$1 $2" ;  }
+mac_ips()   {  grep -F $1 | cut -d' ' -f1 ;  }
+list_macs() {  cut -d' ' -f2 | sort -u ;  }
+dup_macs()  {  [ -f $1 ] && [ `wc -l < $1` != `list_macs < $1 | wc -l` ];  }
+
+####################################################################################
+
+
+
