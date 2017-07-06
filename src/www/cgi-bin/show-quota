@@ -1,0 +1,51 @@
+#!/bin/sh
+
+echo 'Status: 200 OK'
+echo 'Content-Type: text/html'
+echo 'Cache-Control: no-cache'
+echo 'Expires: 0'
+echo ''
+
+echo '<html>'
+
+# Back to admin page
+redirect()
+{
+    echo '<head>'
+    echo '<meta http-equiv="Cache-Control" content="no-cache">'
+    echo '<meta http-equiv="refresh" content="0; URL=/cgi-bin/luci" />'
+    echo '</head>'
+    echo '<body></body>'
+}
+
+# Show requesting ip's quota usage
+show_ip_quota()
+{
+    echo '<head></head>'
+    echo '<body>'
+    echo '<pre>'
+    echo ""; echo ""
+
+    bytes=`get_ip_counter "$REMOTE_ADDR"`
+    mb=$(( $bytes / (1024 * 1024) ))
+    hk=$(( ($bytes % (1024 * 1024)) * 10 / (1024 * 1024) ))
+    echo "Your ip    :  $REMOTE_ADDR"
+    echo "Quota usage:  $mb.$hk Mb"
+    
+    echo '</pre>'
+    echo '<br><br><br><br>'
+    echo '<a href="/cgi-bin/luci">admin</a>'
+    echo '</body>'
+}
+
+source /etc/download_quotas.conf
+source /usr/share/download_quotas/common
+
+# Show quota if enabled, otherwise redirect
+if [ -f $status_file ]; then
+    show_ip_quota
+else
+    redirect
+fi
+
+echo '</html>'
