@@ -15,7 +15,7 @@ lan_current=`ifconfig $if_lan | grep 'inet addr' | sed -e 's/.*:\([^ ]*\) .*/\1/
 echo "--------------------------------------------------------------------------------"
 echo "setting up download quotas: $dl_quota_mb Mb"
 echo "limiting downloads to $dl_cap_max_kb k/s (overquota: $dl_cap_kb k/s)"
-echo "for lan interface: $if_lan   range: [ $lan.$ip_start - $lan.$ip_end ]"
+echo "for ips in [ $lan.$ip_start - $lan.$ip_end ] on interface $if_lan"
 echo "--------------------------------------------------------------------------------"
 echo ""
 
@@ -58,7 +58,7 @@ insmod ip_set_bitmap_ip
 
 # create ipset for accounting, no timeout
 run ipset create IP_QUOTA bitmap:ip range $lan.0/24 counters
-run ipset add IP_QUOTA $lan.$ip_start-$lan.$ip_end
+run ipset add IP_QUOTA $lan.0/24
 
 #######################################################################
 # iptables: check quotas and classify packets
