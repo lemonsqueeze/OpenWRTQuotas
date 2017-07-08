@@ -1,8 +1,8 @@
 #!/bin/sh /etc/rc.common
 # Download quotas
  
-START=99
-STOP=10
+START=30
+STOP=80
 
 EXTRA_COMMANDS="save load reset list"
 EXTRA_HELP=<<EOF

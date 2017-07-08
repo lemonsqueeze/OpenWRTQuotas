@@ -37,7 +37,7 @@ SFQ="sfq perturb 10"
 
 run $TQA root handle 1: htb
 for i in `ip_indexes`; do
-    echo "creating tc classes for $lan.$i"
+    printf "creating tc classes for $lan.$i\r"
     id=$i
     # over quota speed limits
     $TCA parent 1: classid 1:$id htb rate ${dl_cap}kbit ceil ${dl_cap}kbit prio 2
@@ -48,6 +48,7 @@ for i in `ip_indexes`; do
     $TCA parent 1: classid 1:$id htb rate ${dl_cap_max}kbit ceil ${dl_cap_max}kbit prio 2
     $TQA parent 1:$id handle $id: $SFQ
 done
+echo ""
 
 #######################################################################
 # ipset
@@ -76,10 +77,11 @@ run $IPT_POST -m set --match-set IP_QUOTA dst ! --update-counters -g normal
 
 # classify packets
 for i in `ip_indexes`; do
-    echo "creating iptables rules for $lan.$i"
+    printf "creating iptables rules for $lan.$i\r"
     $IPT -A overquota --dst $lan.$i -j CLASSIFY --set-class 1:$i
     $IPT -A normal    --dst $lan.$i -j CLASSIFY --set-class 1:$(($i + 512))
 done
+echo ""
 
 touch $status_file
 

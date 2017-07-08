@@ -11,5 +11,8 @@
 EOF
 ) | crontab -
 
+/etc/init.d/firewall disable
 /etc/init.d/cron enable
+/etc/init.d/download-quotas enable
+
 exit 0

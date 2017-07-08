@@ -4,7 +4,7 @@
 source /etc/download_quotas.conf
 source /usr/share/download_quotas/common
 
-[ -f $status_file ] || die "download quotas are already disabled"
+# not checking $status_file here
 
 ##################################################################
 

@@ -52,9 +52,8 @@ Installation:
 
 - Edit `/etc/download_quotas.conf`, set limits and lan ip address range (should include your dhcp range, preferrably the whole local network)
 
-- Enable download-quotas service:
+- reboot
 
-        /etc/init.d/download-quotas enable
 
 Notes:
 
@@ -90,10 +89,12 @@ By default quotas start automatically on boot, are saved every 30 mins and reset
 
 ### Notes
 
-Currently replaces OpenWrt's firewall rules. if you have have custom rules or create some through
-web interface they will get wiped out. It makes sense to disable the firewall service in OpenWrt's interface.
+At the moment it's not possible to use OpenWrt's firewall and download-quotas at the same time:
+download-quotas will wipe firewall rules when it starts and vice-versa.
+Currently firewall service is disabled when installing download-quotas.
+If you have have custom rules or create some through web interface they will not take effect.
 
-This is by no means absolutely secure, however with a typical group of non-hostile guests it works very well:  
+This is by no means absolutely secure, however with a typical group of non-hostile guests it works pretty well:  
 
 - Mac addresses can be changed, if a guest does so he'll get a brand new quota.  
 - Limits only kick in for ip range specified in `enable_quota`. If you left addresses out

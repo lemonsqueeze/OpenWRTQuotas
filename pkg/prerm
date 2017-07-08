@@ -1,3 +1,7 @@
 #!/bin/sh
 # remove crontab entry
 crontab -l 2>/dev/null | grep -v 'download.quotas' | crontab -
+/etc/init.d/firewall enable
+
+exit 0
+
