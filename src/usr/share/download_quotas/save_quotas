@@ -16,7 +16,6 @@ usage() {  die "usage: save_quotas file";  }
 
 echo "$header" > "$file"
 
-timestamp=`date +"%s"`
 dump_online_quotas()
 {
     ip_counters | tr ' '  '\n' | while read ip; read bytes; do
@@ -24,7 +23,9 @@ dump_online_quotas()
 	[ -z "$mac" ] && continue
 	name=`host_name $ip`
 	[ -z "$name" ] && name=`name_for_mac $mac`
-	echo "$mac" "$bytes" "$timestamp" "$name"
+	time=`connected_time $mac $ip`
+	[ -z "$time" ] && time=`date +"%s"`
+	echo "$mac" "$bytes" "$time" "$name"
     done    
 }
 

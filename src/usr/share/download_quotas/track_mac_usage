@@ -34,6 +34,7 @@ list_arp < $cur | while read ip ; read mac; do
 	count=$(( $mac_count + $ip_count ))	
 	echo "new $ip $mac: setting count $count"
 	set_ip_counter $ip $count
+	echo "$mac $ip `date +'%s'`" >> $connected_times
     fi
 done
 

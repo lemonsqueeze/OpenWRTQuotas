@@ -82,5 +82,7 @@ dup_macs()  {  [ -f $1 ] && [ `wc -l < $1` != `list_macs < $1 | wc -l` ];  }
 
 ####################################################################################
 
+# devices last seen times (format: mac ip timestamp)
+connected_times=$dir/connected_times
 
-
+connected_time() {  grep "$1 $2 " < $connected_times | tail -1 | cut -d' ' -f3;  }

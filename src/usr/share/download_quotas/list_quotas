@@ -7,17 +7,28 @@ source /usr/share/download_quotas/common
 
 print_quota()
 {
-    mac="$1";  bytes="$2";  time="$3";  name="$4"
+    mac="$1";  bytes="$2";  time="$3";  name="$4";  ip="$5"
     mb=$(( $bytes / (1024 * 1024) ))
-    hk=$(( ($bytes % (1024 * 1024)) / (100 * 1024) ))
-    printf "  %5i.$hk Mb  %-35s $mac $time\n" "$mb" "$name"
+    hk=$(( ($bytes % (1024 * 1024)) * 10 / (1024 * 1024) ))
+    printf "%-15s %5i.$hk Mb  %-39s $time          $mac\n"  "$ip"  "$mb"  "$name"
 }
 
-echo ""
-echo "Quota usage:"
-`dirname $0`/save_quotas - | tail +2 | tr ' '  '\n' |
+# busybox sort -k doesn't work, beware
+sort_by_timestamp() {  awk '{print $3" "$1" "$2" "$4;}' | sort -n | awk '{print $2" "$3" "$1" "$4;}';  }
+
+# return ip(s) found for mac
+ips_for_mac() {  < /proc/net/arp grep -F "$1" | cut -d' ' -f1 ;  }
+
+echo "Current IP        Usage     Name                                    Last Seen                 Mac Address"
+
+`dirname $0`/save_quotas - | tail +2 | sort_by_timestamp | tr ' '  '\n' |
 while read mac; read bytes; read timestamp; read name; do
     time=`date --date=@$timestamp +"%Y-%m-%d %H:%M"`
-    print_quota "$mac" "$bytes" "$time" "$name"
+    first=1
+    for ip in `ips_for_mac $mac` ""; do
+	if [ -n "$first" ] || [ -n "$ip" ]; then
+	    print_quota "$mac" "$bytes" "$time" "$name" "$ip";   first=""
+	fi
+    done
 done
-echo ""
+
