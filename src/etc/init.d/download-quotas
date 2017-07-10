@@ -29,5 +29,6 @@ save()  {  echo "Saving current quotas ..."
            /usr/share/download_quotas/save_quotas $saved_quotas;  }
 load()  {  echo "Loading saved quotas ..."
            /usr/share/download_quotas/load_quotas $saved_quotas;  }
-reset() {  /usr/share/download_quotas/reset_quotas;  }
+reset() {  rm $saved_quotas;
+           /usr/share/download_quotas/reset_quotas;  }
 list()  {  /usr/share/download_quotas/list_quotas;  }
