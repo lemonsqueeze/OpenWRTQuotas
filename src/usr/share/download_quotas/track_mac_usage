@@ -29,9 +29,7 @@ done
 # restore new mac addresses ip counter
 list_arp < $cur | while read ip ; read mac; do
     if ! arp_has $ip $mac < $prev; then
-	mac_count=`get_mac_counter $mac`  # saved mac usage
-	ip_count=`get_ip_counter $ip`     # bytes transferred since we last run
-	count=$(( $mac_count + $ip_count ))	
+	count=`get_mac_counter $mac`  # saved mac usage
 	echo "new $ip $mac: setting count $count"
 	set_ip_counter $ip $count
 	echo "$mac $ip `date +'%s'`" >> $connected_times
