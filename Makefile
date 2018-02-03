@@ -12,9 +12,9 @@ ARCH=all
 
 ifdef SELFCONTAINED
   # Need to set arch target and release for self-contained build
-  ARCH=ramips_24kec
+  ARCH=mips_24kc
   TARGET=ramips/rt305x
-  RELEASE=chaos_calmer/15.05.1
+  RELEASE=releases/17.01.4
 
   PKG=$(NAME)_$(VERSION)_$(ARCH).ipk
   PKG_SRC+=src_extra
@@ -35,7 +35,7 @@ selfcontained self: FORCE
 
 $(PKG): pkg/data.tar.gz  pkg/control.tar.gz  
 	@echo gen $(PKG)
-	@cd pkg ; tar -czf ../$@ control.tar.gz  data.tar.gz 
+	@cd pkg ; tar -czf ../$@ control.tar.gz  data.tar.gz  debian-binary
 
 pkg/control.tar.gz: pkg/control pkg/postinst pkg/prerm
 	@echo gen control.tar.gz
@@ -63,13 +63,13 @@ pkg/control: pkg/control.in pkg/size FORCE
 # selfcontained build
 
 src_extra:
-	selfcontained/get_files $(RELEASE) $(TARGET)
+	selfcontained/get_files $(RELEASE) $(TARGET) $(ARCH)
 
 #############################################################################
 
 clean: FORCE
 	-@rm *.ipk pkg/*.tar.gz pkg/control pkg/size  2>/dev/null
-	-@cd selfcontained; rm Packages filenames  2>/dev/null
+	-@cd selfcontained; rm Packages.* base_filenames kmod_filenames 2>/dev/null
 	-@cd selfcontained; rm -rf data tmp packages  2>/dev/null
 	-@rm -rf src_extra
 
