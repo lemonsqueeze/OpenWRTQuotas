@@ -2,7 +2,7 @@
 VERSION=0.1.1
 NAME=download-quotas
 PKG=$(NAME)_$(VERSION).ipk
-DEPENDS=ipset, iptables-mod-ipopt, tc
+DEPENDS=ipset, tc, iptables-mod-ipopt, kmod-sched
 PKG_SRC=src
 ARCH=all
 
