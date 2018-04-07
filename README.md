@@ -1,31 +1,32 @@
-Shared wifi download quotas
-===========================
+Open wifi download quotas
+=========================
 
 Implements download quotas per mac address on a Linux router.  
 At the moment it focuses on [OpenWrt](http://openwrt.org) but shouldn't be hard to make it work on other distributions.
 
 ### Scenario
 
-You have a linux router on shared wifi with many guests,
-your internet connection's monthly allowance is getting eaten up fast,
-you need to limit downloads somehow. 
+You have a linux router on an open wifi network with many guests,
+your internet connection's monthly allowance is getting eaten up fast
+(or some users are taking a disproportionate amount of resources),
+and you need to limit downloads somehow. 
 
 Usual solution is to use a captive portal: guests need to authenticate and you can setup download quotas.  
 Heavy and not so user friendly. You'll probably need extra hardware to run the portal.
 
 How about this instead: keep wifi open but
-1. Limit each guest download speed to 100k/s max.
+1. Limit each guest download speed to say, 100k/s max.
 2. Each guest starts with 150 Mb download quota.
 3. Once overquota download speed is throttled to 50k/s.
 
 This is what this project does:  
-- 1 is straightforward with netfilter, we create one tc class per ip.  
+- 1 is straightforward to implement with netfilter.
 - For 2 and 3 we need **download quotas per mac address**,
 which is possible with ipset and some bookkeeping:  
-  ipset + iptables gives us download quotas by ip, 
-we just need to keep track of mac-ip pairs (track_mac_usage, which runs every minute)
+ipset + iptables gives us download quotas by ip, 
+we just need to keep track of mac/ip pairs (track_mac_usage, which runs every minute)
 
-For tc / iptables rules details see this SE [question](https://unix.stackexchange.com/a/375705) and
+For netfilter / iptables rules details see this SE [question](https://unix.stackexchange.com/a/375705) and
 [enable_quotas](https://github.com/lemonsqueeze/WifiDownloadQuotas/blob/master/src/usr/share/download_quotas/enable_quotas) source.
 
 ------------------------------------------------------------------------------------
@@ -37,7 +38,7 @@ What you need:
 - Wifi router supported by OpenWrt (8Mb flash better)
 - Ipset support (tested with Chaos Calmer 15.05 but any release should do)
 
-Installation:
+**Setup:**
 - Flash OpenWrt firmware, configure router
 - clone repository, build package:
 
@@ -58,7 +59,7 @@ Installation:
 - reboot
 
 
-Notes:
+**Notes:**
 
 If you have 4Mb flash you'll most likely run out of space with the default package, the dependencies are too big.  
 You probably have enough for a selfcontained build though:  
