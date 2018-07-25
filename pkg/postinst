@@ -15,4 +15,7 @@ EOF
 /etc/init.d/cron enable
 /etc/init.d/download-quotas enable
 
+# Wipe luci cache
+rm -rf /tmp/luci*
+
 exit 0

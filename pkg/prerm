@@ -3,4 +3,7 @@
 crontab -l 2>/dev/null | grep -v 'download.quotas' | crontab -
 /etc/init.d/firewall enable
 
+# Wipe luci cache
+rm -rf /tmp/luci*
+
 exit 0
