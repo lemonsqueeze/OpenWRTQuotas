@@ -6,6 +6,7 @@ License: GPL-2.0
 Section: net
 Maintainer: lemonsqueeze <lemonsqueeze@gmx.com>
 Architecture: ARCH
+OS-Version: RELEASE_VERS
 Installed-Size: SIZE
 Description:  Wifi download quotas
 Homepage: http://github.com/lemonsqueeze/WifiDownloadQuotas

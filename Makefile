@@ -5,18 +5,25 @@ PKG=$(NAME)_$(VERSION).ipk
 DEPENDS=ipset, tc, iptables-mod-ipopt, kmod-sched
 PKG_SRC=src
 ARCH=all
+RELEASE_VERS=15.05.1
 
 # Make self-contained package ?
-# ie no dependencies, include needed binaries from other packages
+# ie no dependencies, include needed binaries from other packages.
+# Uncomment this and set router arch, target and release below.
 # SELFCONTAINED=1
 
 ifdef SELFCONTAINED
-  # Need to set arch target and release for self-contained build
+  # opkg info busybox | grep Architecture
   ARCH=ramips_24kec
-  TARGET=ramips/rt305x
-  RELEASE=chaos_calmer/15.05.1
 
-  PKG=$(NAME)_$(VERSION)_$(ARCH).ipk
+  # values from /etc/openwrt_release:
+  TARGET=ramips/rt305x
+  RELEASE_NAME=chaos_calmer
+  RELEASE_VERS=15.05.1
+
+  RELEASE=$(RELEASE_NAME)/$(RELEASE_VERS)
+  RELEASE_SHORT=$(shell echo -n $(RELEASE_VERS) | cut -d. -f1-2 )
+  PKG=$(NAME)_$(VERSION)_$(ARCH)_$(RELEASE_SHORT).ipk
   PKG_SRC+=src_extra
   DEPENDS=
 endif
@@ -57,7 +64,8 @@ pkg/size: FORCE		# divide real size by 3 to approx compression
 pkg/control: pkg/control.in pkg/size FORCE
 	@cd pkg ; cat control.in | \
          sed -e 's/VERSION/$(VERSION)/' -e 's/DEPENDS/$(DEPENDS)/' \
-	     -e 's/ARCH/$(ARCH)/'       -e "s/SIZE/`cat size`/" > control
+	     -e 's/ARCH/$(ARCH)/'       -e "s/SIZE/`cat size`/"    \
+	     -e 's/RELEASE_VERS/$(RELEASE_VERS)/' > control
 
 #############################################################################
 # selfcontained build
