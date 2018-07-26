@@ -1,0 +1,55 @@
+#!/bin/sh
+
+install_url="$1"
+
+fake_wget()  {  
+	     if [ "$1" = "-O" ]; then shift; dst="$1"; shift
+	     else dst=`basename "$1"`
+	     fi
+             file=`basename "$1"`
+	     cp "/tmp/wget/$file" "$dst"
+}
+
+get_config()       {  uci -q get "$1";  }
+repo_url=`get_config "download_quotas.@other[0].repo_url"`
+
+tmp="/tmp/downloads"
+mkdir $tmp
+fake_wget -O $tmp/index.txt "$repo_url/index.txt"
+
+echo "<ul>"
+
+display()
+{
+      echo "<li>"
+      echo "<span style='display:inline-block; width:60px;'>$version</span>"
+      echo "<span style='display:inline-block; width:120px;'>$date</span>"
+
+      cat <<EOF
+<input type="button" class="cbi-button cbi-button-apply" style="margin-left:3em"
+       value="Install" onclick="location.href='$install_url?file=$file'" />
+EOF
+      echo "<br><br>"
+      echo "<div style='display:inline-block'><pre>"
+      cat $tmp/changes
+      echo "</pre></div><br><br>"
+      echo "</li>"
+}
+
+cat $tmp/index.txt | while read name value; do
+  [ "$name" = "file:" ] && file="$value"
+  [ "$name" = "date:" ] && date="$value"
+  [ "$name" = "version:" ] && version="$value"
+  if [ "$name" = "changes:" ]; then
+      echo -n "" > $tmp/changes
+      [ -n "$value" ] && echo "$value" >> $tmp/changes		# Skip first line if empty
+      while IFS="" read f ; do
+	  [ -z "$f" ] && break
+	  echo "$f" >> $tmp/changes
+      done
+      display
+      file=""; date=""; version=""
+  fi
+done
+
+echo "</ul>"

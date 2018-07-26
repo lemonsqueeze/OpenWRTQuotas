@@ -1,0 +1,4 @@
+
+config other
+	option repo_url 'https://lemonsqueeze.github.io/OpenWRTQuotas/releases/openwrt/generic'
+
