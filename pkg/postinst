@@ -7,6 +7,8 @@
   *     *   *   *   *    /usr/share/download_quotas/track_mac_usage    # update quotas per mac address
   */30  *   *   *   *    /etc/init.d/download-quotas save              # save quotas every 30mins
   *     *   1   *   *    /etc/init.d/download-quotas reset             # reset quotas every month
+  0     0   *   *   *    /usr/share/download_quotas/night_check stop   # 00:00 -> no quotas at night !
+  0     6   *   *   *    /usr/share/download_quotas/night_check start  # 06:00 -> re-enable quotas
 
 EOF
 ) | crontab -

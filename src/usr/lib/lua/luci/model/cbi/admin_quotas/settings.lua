@@ -15,6 +15,7 @@ s:option(Value, "speed_overquota", "Max Speed (Overquota)", "Max download speed 
 s = m:section(TypedSection, "global", "Global")
 s.anonymous = true
 
+s:option(Flag, "night_disable",  "Disable at night ?", "Turn off quotas between midnight - 6:00 ?")
 s:option(Value, "lan_interface",    "LAN Interface", "'br-lan' usually for openwrt.")
 
 

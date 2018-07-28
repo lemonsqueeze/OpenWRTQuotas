@@ -1,0 +1,16 @@
+#!/bin/sh
+# Usage: night_check <start|stop>
+
+action="$1"
+
+# Get settings from /etc/config
+get_config()       {  uci -q get "$1";  }
+status=`get_config "download_quotas.@global[0].night_disable" `
+
+if [ "$status" != "1" ]; then
+    echo "night_disable: $status, nothing to do."
+    exit 0
+fi
+
+[ "$action" = "start" ] && /etc/init.d/download-quotas start
+[ "$action" = "stop" ]  && /etc/init.d/download-quotas stop

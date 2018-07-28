@@ -3,12 +3,25 @@
 source /etc/download_quotas.conf
 source /usr/share/download_quotas/common
 
+# Get settings from /etc/config
+global_section="download_quotas.@global[0]"
+get_config()       {  uci -q get "$1";  }
+check_flag()
+{
+    v=`get_config "$global_section.$1"`
+    [ "$v" =  "1" ] && echo '<span style="color:green">Yes</span>'
+    [ "$v" != "1" ] && echo 'No'
+}
+
 if [ -f $status_file ]; then
     echo '<p style="font-size:small;">'
     echo "Version: " `opkg list_installed download-quotas | sed -e 's/.* //'` "<br>"
     echo 'Quotas: <span style="color:green">Enabled</span><br>'
     echo "Download quota per device: $dl_quota_mb Mb<br>"
-    echo "Max download speed: $dl_cap_max_kb k/s (overquota: $dl_cap_kb k/s)</p>"
+    echo "Max download speed: $dl_cap_max_kb k/s (overquota: $dl_cap_kb k/s)<br>"
+    echo "<br>"
+    echo "Disable at night: `check_flag night_disable`"
+    echo "</p>"
 else
     echo '<p>Quotas: <span style="color:red">Disabled</span></p>'
 fi

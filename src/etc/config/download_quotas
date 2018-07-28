@@ -6,6 +6,7 @@ config guests
 
 config global
 	option lan_interface 'br-lan'
+	option night_disable '0'
 
 config updates
 	option repo_url 'https://lemonsqueeze.github.io/OpenWRTQuotas/releases/openwrt/generic'
