@@ -1,5 +1,5 @@
 
-VERSION=1.0
+VERSION=1.1
 NAME=download-quotas
 PKG=$(NAME)_$(VERSION).ipk
 DEPENDS=ipset, tc, wget, iptables-mod-ipopt, kmod-sched
