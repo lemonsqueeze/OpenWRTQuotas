@@ -8,7 +8,8 @@ function index()
     entry({"admin", "quotas"}, alias("admin", "quotas", "template"), "Quotas", 60).index = true
 
     entry({"admin", "quotas", "status"}, template("admin_quotas/status"), "Status", 1)
-    entry({"admin", "quotas", "update"}, template("admin_quotas/update"), "Update", 2)
+    entry({"admin", "quotas", "settings"}, cbi("admin_quotas/settings"), "Settings", 2)
+    entry({"admin", "quotas", "update"}, template("admin_quotas/update"), "Update", 3)
 
     -- for update page
     entry({"admin", "quotas", "install"}, call("action_install"), nil).leaf = true

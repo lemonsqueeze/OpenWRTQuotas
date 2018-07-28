@@ -1,4 +1,9 @@
 
+config guests
+	option download_quota  '100'
+	option speed_normal    '50'
+	option speed_overquota '10'
+
 config updates
 	option repo_url 'https://lemonsqueeze.github.io/OpenWRTQuotas/releases/openwrt/generic'
 	option failsafe_version '1.0'
