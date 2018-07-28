@@ -1,0 +1,19 @@
+<% 
+   local http = require "luci.http"
+   http.prepare_content("text/html")
+%>
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Cache-Control" content="no-cache" />
+<meta http-equiv="refresh" content="20; URL=<%=http.protocol.urldecode(http.formvalue('url'))%>" />
+<link rel="stylesheet" type="text/css" href="/res/sync.css" />
+</head>
+
+<body style="background-color: white">
+  <div class="spinner">
+    <img class="fa fa-spin" width="100" src="/res/sync.svg" />
+  </div>
+</body>
+</html>

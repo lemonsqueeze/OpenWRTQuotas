@@ -1,0 +1,22 @@
+<!-- https://github.com/openwrt/luci/wiki/Templates -->
+
+<%+header%>
+
+<%
+  local fs   = require "nixio.fs"
+  local http = require "luci.http"
+
+  local e = fs.readfile("/tmp/download_quotas/cmd.res")
+  if e+0 == 0 then
+	http.write("<h1>Success !</h1>")
+  else
+	http.write("<h1>Failed</h1>")
+	http.write("<br><br><br>")
+	http.write("Details:<br>")
+	http.write("<div style='display:inline-block'><pre>")
+	http.write(fs.readfile("/tmp/download_quotas/cmd.log"))
+	http.write("</pre></div>")
+  end
+%>
+
+<%+footer%>
