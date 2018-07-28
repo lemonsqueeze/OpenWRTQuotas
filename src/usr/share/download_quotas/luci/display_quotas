@@ -1,0 +1,21 @@
+#!/bin/sh
+
+source /etc/download_quotas.conf
+source /usr/share/download_quotas/common
+
+if [ -f $status_file ]; then
+    echo '<p style="font-size:small;">'
+    echo "Version: " `opkg list_installed download-quotas | sed -e 's/.* //'` "<br>"
+    echo 'Quotas: <span style="color:green">Enabled</span><br>'
+    echo "Download quota per device: $dl_quota_mb Mb<br>"
+    echo "Max download speed: $dl_cap_max_kb k/s (overquota: $dl_cap_kb k/s)</p>"
+else
+    echo '<p>Quotas: <span style="color:red">Disabled</span></p>'
+fi
+
+echo '<pre>'
+echo ""; echo ""
+
+/etc/init.d/download-quotas list
+
+echo '</pre>'

@@ -1,0 +1,18 @@
+<!-- https://github.com/openwrt/luci/wiki/Templates -->
+
+<%+header%>
+<h1><%:Status%></h1>
+
+<%
+        -- os.execute() / sys.call() doesn't return cmd output ...
+	function os.backquote(cmd)
+		local f = assert(io.popen(cmd, 'r'))
+		local s = assert(f:read('*all'))
+		f:close()
+		return s
+	end
+
+        write(os.backquote("/usr/share/download_quotas/luci/display_quotas"))
+%>
+
+<%+footer%>
