@@ -1,16 +1,71 @@
 #!/bin/sh
-# update script: download and install another version
-# usage: install remote_repo_file.ipk
+# usage: install <filename.ipk> <md5sum>
+# update script: download and install repo_url/filename.ipk
+# fall back to /etc/config/download_quotas failsafe_version if fails to install.
+
+die() {  echo "$@"; exit 1;  }
+[ $# = "2" ] || die "usage: install <filename.ipk> <md5sum>"
+
+# download <url> <file> <md5sum>
+download()  {
+    [ "$#" = 3 ] || return 1
+    echo "downloading $2"
+    /usr/bin/wget --no-check-certificate -O "$2" "$1" || return 1
+
+    echo -n "md5 check: "
+    echo "$3  $2" > md5
+    if ! md5sum -c md5; then
+	mv "$2" "$2.bad";  return 1
+    fi
+    echo "ok";  echo ""
+    return 0
+}
 
 get_config()       {  uci -q get "$1";  }
-repo_url=`get_config "download_quotas.@other[0].repo_url"`
+section="download_quotas.@updates[0]"
+repo_url=`get_config "$section.repo_url"`
+failsafe_version=`get_config "$section.failsafe_version"`
+failsafe=""
 
+tmp="/tmp/downloads"
+mkdir $tmp  2>/dev/null
+cd $tmp                                    || exit 1
+
+get_failsafe_pkg_info()
+{
+    cat $tmp/index.txt | while read name value; do
+	[ "$name" = "file:" ] && file="$value"
+	[ "$name" = "version:" ] && version="$value"
+	[ "$name" = "md5sum:" ] && md5sum="$value"
+	
+	if  [ "$name" = "md5sum:" ] &&
+	    [ "$version" = "$failsafe_version" ]; then
+	    echo "$file" > failsafe
+	    echo "$md5sum" > failsafe_md5
+	fi
+    done    
+    failsafe=`cat failsafe`
+    failsafe_md5=`cat failsafe_md5`
+}
+
+get_failsafe_pkg_info
+echo "failsafe_version: $failsafe_version"
+echo "failsafe:         $failsafe"
+echo "failsafe_md5:     $failsafe_md5"
+echo ""
+
+# Download failsafe pkg
+url="$repo_url/$failsafe"
+failsafe=`basename "$failsafe"`
+download $url $failsafe $failsafe_md5      || exit 1
+
+url="$repo_url/$1"
 file=`basename "$1"`
-mkdir /tmp/downloads  2>/dev/null
-cd /tmp/downloads
+md5sum="$2"
+download $url $file $md5sum                || exit 1
+opkg remove download-quotas                || exit 1
 
-/usr/bin/wget --no-check-certificate -O "$file" "$repo_url/$1"  || exit 1
-tar -tvzf "$file" > /dev/null                          || exit 1
-tar -tvzf "$file" | grep -q control.tar.gz             || exit 1
-opkg remove download-quotas                            || exit 1
-opkg install "$file"                                   || exit 1
+if ! opkg install "$file"; then
+    echo ""; echo "failed, reverting to failsafe version ..."
+    opkg install "$failsafe";                 exit 1
+fi

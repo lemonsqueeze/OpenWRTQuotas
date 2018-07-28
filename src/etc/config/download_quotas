@@ -1,4 +1,5 @@
 
-config other
+config updates
 	option repo_url 'https://lemonsqueeze.github.io/OpenWRTQuotas/releases/openwrt/generic'
+	option failsafe_version '1.0'
 

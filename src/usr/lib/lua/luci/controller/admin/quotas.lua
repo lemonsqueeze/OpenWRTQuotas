@@ -28,5 +28,6 @@ function action_install()
 	http.redirect(spinner_url)
 
         local file = http.formvalue("file")
-	log_cmd("/usr/share/download_quotas/luci/install " .. file)
+        local md5 = luci.http.formvalue("md5")
+	log_cmd("/usr/share/download_quotas/luci/install " .. file .. " " .. md5)
 end

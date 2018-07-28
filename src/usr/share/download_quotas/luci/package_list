@@ -3,7 +3,7 @@
 install_url="$1"
 
 get_config()       {  uci -q get "$1";  }
-repo_url=`get_config "download_quotas.@other[0].repo_url"`
+repo_url=`get_config "download_quotas.@updates[0].repo_url"`
 
 tmp="/tmp/downloads"
 rm -rf $tmp;  mkdir $tmp
@@ -19,7 +19,7 @@ display()
 
       cat <<EOF
 <input type="button" class="cbi-button cbi-button-apply" style="margin-left:3em"
-       value="Install" onclick="location.href='$install_url?file=$file'" />
+       value="Install" onclick="location.href='$install_url?file=$file&md5=$md5sum'" />
 EOF
       echo "<br><br>"
       echo "<div style='display:inline-block'><pre>"
@@ -28,10 +28,12 @@ EOF
       echo "</li>"
 }
 
+# Display versions
 cat $tmp/index.txt | while read name value; do
   [ "$name" = "file:" ] && file="$value"
   [ "$name" = "date:" ] && date="$value"
   [ "$name" = "version:" ] && version="$value"
+  [ "$name" = "md5sum:" ] && md5sum="$value"
   if [ "$name" = "changes:" ]; then
       echo -n "" > $tmp/changes
       [ -n "$value" ] && echo "$value" >> $tmp/changes		# Skip first line if empty
@@ -40,7 +42,7 @@ cat $tmp/index.txt | while read name value; do
 	  echo "$f" >> $tmp/changes
       done
       display
-      file=""; date=""; version=""
+      file=""; date=""; version=""; md5sum=""
   fi
 done
 
