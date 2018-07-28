@@ -1,0 +1,23 @@
+<!-- https://github.com/openwrt/luci/wiki/Templates -->
+
+<%+header%>
+<h1><%:Admin%></h1>
+
+
+<input type="button" class="cbi-button cbi-button-apply" style="margin-left:3em"
+       value="<%:Disable Quotas%>" 
+       onclick="location.href='<%=luci.dispatcher.build_url("admin/quotas/stop")%>'"
+/><br><br>
+
+<input type="button" class="cbi-button cbi-button-apply" style="margin-left:3em"
+       value="<%:Enable Quotas%>" 
+       onclick="location.href='<%=luci.dispatcher.build_url("admin/quotas/start")%>'"
+/><br><br>
+
+<input type="button" class="cbi-button cbi-button-apply" style="margin-left:3em"
+       value="<%:Reset Quotas%>"
+       onclick="location.href='<%=luci.dispatcher.build_url("admin/quotas/reset")%>'"
+/><br><br>
+
+
+<%+footer%>

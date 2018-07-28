@@ -9,12 +9,33 @@ function index()
 
     entry({"admin", "quotas", "status"}, template("admin_quotas/status"), "Status", 1)
     entry({"admin", "quotas", "settings"}, cbi("admin_quotas/settings"), "Settings", 2)
-    entry({"admin", "quotas", "update"}, template("admin_quotas/update"), "Update", 3)
+    entry({"admin", "quotas", "admin"}, template("admin_quotas/admin"), "Admin", 3)
+    entry({"admin", "quotas", "update"}, template("admin_quotas/update"), "Update", 4)
+
+    -- for admin page
+    entry({"admin", "quotas", "stop"},  call("action_stop"), nil).leaf = true
+    entry({"admin", "quotas", "start"}, call("action_start"), nil).leaf = true
+    entry({"admin", "quotas", "reset"}, call("action_reset"), nil).leaf = true
 
     -- for update page
     entry({"admin", "quotas", "install"}, call("action_install"), nil).leaf = true
     entry({"admin", "quotas", "spinner"}, template("admin_quotas/spinner"), nil).leaf = true
     entry({"admin", "quotas", "check_cmd"}, template("admin_quotas/check_cmd"), nil).leaf = true
+end
+
+function action_stop()
+	luci.sys.call("/etc/init.d/download-quotas stop;  sleep 5")
+	luci.http.redirect(luci.dispatcher.build_url("admin/quotas/status"))
+end
+
+function action_start()
+	luci.sys.call("/etc/init.d/download-quotas start;  sleep 5")
+	luci.http.redirect(luci.dispatcher.build_url("admin/quotas/status"))
+end
+
+function action_reset()
+	luci.sys.call("/etc/init.d/download-quotas reset;  sleep 5")
+	luci.http.redirect(luci.dispatcher.build_url("admin/quotas/status"))
 end
 
 function log_cmd(cmd)
