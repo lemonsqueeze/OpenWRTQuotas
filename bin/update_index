@@ -1,0 +1,20 @@
+#!/usr/bin/perl
+
+my $repo = $ARGV[0];
+my $filename = "$repo/index.txt";
+(-f $filename) || exit(0);
+open(IN,  "< $filename") || die "couldn't open $filename";
+
+my $out = "/tmp/index.txt";
+open(OUT, "> $out") || die "couldn't open $out";
+
+my $file = "";
+foreach my $s (<IN>) {
+    if ($s =~ m/^file: *([^ ]+)/) {  $file = "$repo/$1";  chomp($file); }
+    if ($s =~ m/^md5sum:/)        {  $md5 = `md5sum $file | cut -d' ' -f1`; chomp($md5);
+				     $s = sprintf("md5sum: %s\n", $md5);  }
+    print OUT $s;
+}
+
+close(IN); close(OUT);
+`mv $out $filename`;

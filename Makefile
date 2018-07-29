@@ -6,6 +6,7 @@ DEPENDS=ipset, tc, iptables-mod-ipopt, kmod-sched
 PKG_SRC=src
 ARCH=all
 RELEASE_VERS=15.05.1
+REPO_DIR=gh-pages/releases/base/generic
 
 # Make self-contained package ?
 # ie no dependencies, include needed binaries from other packages.
@@ -20,6 +21,7 @@ ifdef SELFCONTAINED
   TARGET=ramips/rt305x
   RELEASE_NAME=chaos_calmer
   RELEASE_VERS=15.05.1
+  REPO_DIR=gh-pages/releases/base/ramips/$(RELEASE_VERS)
 
   RELEASE=$(RELEASE_NAME)/$(RELEASE_VERS)
   RELEASE_SHORT=$(shell echo -n $(RELEASE_VERS) | cut -d. -f1-2 )
@@ -71,6 +73,35 @@ pkg/control: pkg/control.in pkg/size FORCE
 
 src_extra:
 	selfcontained/get_files $(RELEASE) $(TARGET)
+
+#############################################################################
+# Package repository
+
+repo: $(PKG)
+	@mkdir -p $(REPO_DIR)
+	@echo "copy to repo: $(REPO_DIR)"
+	@cp $(PKG) $(REPO_DIR)/
+	@echo "updating index, md5s"
+	@make update_index
+	@echo "('make Packages' to update Packages file)"
+
+update_index:
+	@bin/update_index $(REPO_DIR)
+	@cd gh-pages && ./gen_index >/dev/null
+
+Packages: $(REPO_DIR)/Packages
+
+# Run after make repo to update Packages file
+$(REPO_DIR)/Packages: pkg/control
+	@echo "gen repo Packages"
+	@mkdir -p $(REPO_DIR)
+	@grep -B 100 '^Installed-Size' pkg/control > $@
+	@echo "Filename: $(PKG)" >> $@
+	@echo "Size:" `cat $(REPO_DIR)/$(PKG) | wc -c` >> $@
+	@echo "MD5Sum:" `md5sum $(REPO_DIR)/$(PKG) | cut -d' ' -f1` >> $@
+	@echo "SHA256sum:" `sha256sum $(REPO_DIR)/$(PKG) | cut -d' ' -f1` >> $@
+	@grep -A 100 '^Installed-Size' pkg/control | tail -n +2 >> $@
+	@echo "" >> $@
 
 #############################################################################
 
