@@ -1,3 +1,4 @@
+local http = require "luci.http"
 local sys = require "luci.sys"
 local fs  = require "nixio.fs"
 
@@ -10,10 +11,16 @@ s:option(Value, "download_quota",  "Download Quota", "How much data (Mb) each gu
 s:option(Value, "speed_normal",    "Max Speed (Normal)", "Max download speed for each device (k/s)")
 s:option(Value, "speed_overquota", "Max Speed (Overquota)", "Max download speed once overquota (k/s).")
 
+function spinner_redirect(url)
+	url = http.protocol.urlencode(url)
+	local spinner = luci.dispatcher.build_url("admin/quotas/spinner") .. "?url=" .. url
+	http.redirect(spinner)
+end
+
 -- Called on "Save & Apply"
 function m.on_commit(map)
-	 sys.call("/etc/init.d/download-quotas stop")
-	 sys.call("/etc/init.d/download-quotas start")
+	spinner_redirect(luci.dispatcher.build_url("admin/quotas/status"))
+	sys.call("/etc/init.d/download-quotas stop; /etc/init.d/download-quotas start")
 end
 
 return m -- Returns the map
