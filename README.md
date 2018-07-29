@@ -2,7 +2,7 @@ Open wifi download quotas
 =========================
 
 Implements download quotas per mac address on a Linux router.  
-At the moment it focuses on [OpenWrt](http://openwrt.org) but shouldn't be hard to make it work on other distributions.
+At the moment it focuses on [OpenWrt](http://openwrt.org) but shouldn't be hard to adapt to other distributions.
 
 ### Scenario
 
@@ -11,53 +11,75 @@ your internet connection's monthly allowance is getting eaten up fast
 (or some users are taking a disproportionate amount of resources),
 and you need to limit downloads somehow. 
 
-Usual solution is to use a captive portal: guests need to authenticate and you can setup download quotas.  
+Usual solution is to setup a captive portal: guests will need to authenticate and you can have download quotas.  
 Heavy and not so user friendly. You'll probably need extra hardware to run the portal.
 
 How about this instead: keep wifi open but
-1. Limit each guest download speed to say, 100k/s max.
-2. Each guest starts with 150 Mb download quota.
-3. Once overquota download speed is throttled to 50k/s.
+1. Limit each guest to say, 50k/s max.
+2. Each guest starts with 100 Mb download quota.
+3. Once overquota download speed is throttled to 10k/s.
 
-This is what this project does:  
-- 1 is straightforward to implement with netfilter.
-- For 2 and 3 we need **download quotas per mac address**,
-which is possible with ipset and some bookkeeping:  
-ipset + iptables gives us download quotas by ip, 
-we just need to keep track of mac/ip pairs (track_mac_usage, which runs every minute)
-
-For netfilter / iptables rules details see this SE [question](https://unix.stackexchange.com/a/375705) and
-[enable_quotas](https://github.com/lemonsqueeze/OpenWRTQuotas/blob/master/src/usr/share/download_quotas/enable_quotas) source.
+This way kids going on youtube can't eat up all the bandwidth, network remains
+open, and in the worst case if someone goes overquota he can still check email etc.
+You can also adapt to circumstances by tweaking the limits : Expecting huge number of guests ?
+Lower speed and quota. Lots of bandwidth remaining ? Relax the rules etc.
 
 ------------------------------------------------------------------------------------
 
 ### Installation
 
+You need:  
+- Router supported by [OpenWrt](http://openwrt.org) (8Mb flash better)
+  I'm using a TP-Link TL-WR810N here: small, costs $30 and works like a charm.
+- Ipset support (tested with OpenWRT Chaos Calmer 15.05 and Designated Driver 16.xx,
+  but other releases should do).
 
-What you need:  
-- Wifi router supported by OpenWrt (8Mb flash better)
-- Ipset support (tested with Chaos Calmer 15.05 but any release should do)
+If you have 4Mb flash only you **need** a custom build, skip below.
 
 **Setup:**
-- Flash OpenWrt firmware, configure router
-- clone repository, build package:
+- Flash OpenWrt firmware and configure router.
+  New to openwrt ? Check out [openwrt wiki](https://wiki.openwrt.org/) and 
+ [openwrt docs](https://openwrt.org/docs). Go to the [downloads](https://openwrt.org/downloads),
+ find the firmware for your router and follow the instructions there. 
+
+- Log into the router admin interface, and add package repository:
+  Browser -> Router IP -> Login -> System -> Software -> Configuration -> Custom Feeds
+  add:
+```
+src/gz download-quotas http://lemonsqueeze.github.io/OpenWRTQuotas/releases/openwrt/generic
+```
+
+- Update package database:
+  System -> Software -> Actions -> Update Lists
+- Select 'download-quota' from available software.
+- Install, Done !
+
+Note:  
+- If web interface is missing after flashing openwrt you need to [install luci](https://wiki.openwrt.org/doc/howto/luci.essentials).
+
+------------------------------------------------------------------------------------
+
+### Interface
+
+Package adds a `Quotas` tab to openwrt's admin interface.
+Login and tweak settings from there:
+
+![]()
+![]()
+![]()
+
+
+
+------------------------------------------------------------------------------------
+
+
+------------------------------------------------------------------------------------
+
+### Build
+
+- Clone repository, build package:
 
         make
-
-- send package to the router:
-
-        scp download-quotas_0.1.1.ipk root@192.168.1.1:/tmp/
-
-- Login through ssh and install package:
-
-        cd /tmp
-        opkg update
-        opkg install download-quotas_0.1.1.ipk
-
-- Edit `/etc/download_quotas.conf`, set limits and lan ip address range (should include your dhcp range, preferrably the whole local network)
-
-- reboot
-
 
 **Notes:**
 
@@ -73,6 +95,57 @@ You probably have enough for a selfcontained build though:
         make selfcontained
 
 - scp and install self-contained package instead (`download-quotas_0.1.1_ramips_24kec.ipk` for example)
+
+
+------------------------------------------------------------------------------------
+
+
+- Either install package directly from web interface:
+  Browser -> Router IP -> Login -> Software -> Install Package
+  using package url from [Release](https://github.com/lemonsqueeze/OpenWRTQuotas/releases)
+  section.
+
+- Or through ssh:
+
+```
+        $ ssh root@192.168.1.1
+        # wget 
+        cd /tmp
+        opkg update
+        opkg install download-quotas_0.1.1.ipk
+
+```
+
+- Download package from Release section.  
+  If you have only 4Mb flash you need a custom build, see below.
+
+
+- send package to the router:
+
+        scp download-quotas_0.1.1.ipk 
+
+- Login through ssh and install package:
+
+        cd /tmp
+        opkg update
+        opkg install download-quotas_0.1.1.ipk
+
+- Edit `/etc/download_quotas.conf`, set limits and lan ip address range (should include your dhcp range, preferrably the whole local network)
+
+- reboot
+
+------------------------------------------------------------------------------------
+
+### Implementation
+
+- 1 is straightforward to implement with netfilter.
+- For 2 and 3 we need **download quotas per mac address**,
+which is possible with ipset and some bookkeeping:  
+ipset + iptables gives us download quotas by ip, 
+we just need to keep track of mac/ip pairs (track_mac_usage, which runs every minute)
+
+For netfilter / iptables rules details see this SE [question](https://unix.stackexchange.com/a/375705) and
+[enable_quotas](https://github.com/lemonsqueeze/OpenWRTQuotas/blob/master/src/usr/share/download_quotas/enable_quotas) source.
 
 
 ------------------------------------------------------------------------------------
