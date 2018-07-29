@@ -11,6 +11,13 @@ s:option(Value, "download_quota",  "Download Quota", "How much data (Mb) each gu
 s:option(Value, "speed_normal",    "Max Speed (Normal)", "Max download speed for each device (k/s)")
 s:option(Value, "speed_overquota", "Max Speed (Overquota)", "Max download speed once overquota (k/s).")
 
+
+s = m:section(TypedSection, "global", "Global")
+s.anonymous = true
+
+s:option(Value, "lan_interface",    "LAN Interface", "'br-lan' usually for openwrt.")
+
+
 function spinner_redirect(url)
 	url = http.protocol.urlencode(url)
 	local spinner = luci.dispatcher.build_url("admin/quotas/spinner") .. "?url=" .. url

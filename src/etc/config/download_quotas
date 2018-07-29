@@ -4,6 +4,9 @@ config guests
 	option speed_normal    '50'
 	option speed_overquota '10'
 
+config global
+	option lan_interface 'br-lan'
+
 config updates
 	option repo_url 'https://lemonsqueeze.github.io/OpenWRTQuotas/releases/openwrt/generic'
 	option failsafe_version '1.0'
