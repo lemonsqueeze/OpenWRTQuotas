@@ -1,0 +1,43 @@
+#!/bin/bash
+
+gen_index()
+{
+    path="$1"
+    echo "gen $path/index.html"
+    (
+	echo "<html><head></head><body>"
+
+	for d in *; do
+	    ! [ -d "$d" ] && continue
+	    echo "<a href=\"$d/\">$d/</a><br>"	    
+	done
+	
+	for f in *; do
+	    ! [ -f "$f" ] && continue
+	    echo "<a href=\"$f\">$f</a><br>"
+	done
+	
+	echo "</body></html>"
+    ) > index.html
+
+    # Recurse
+    for d in *; do
+	! [ -d "$d" ] && continue
+	cd $d
+	gen_index "$path/$d"
+	cd ..
+    done    
+}
+
+# Root index
+echo "gen index.html"
+cat > index.html <<EOF
+<html><head></head><body>
+  <a href="releases/">releases</a><br>
+</body></html>
+EOF
+
+cd releases
+gen_index "releases"
+
+
