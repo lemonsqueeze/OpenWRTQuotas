@@ -23,19 +23,25 @@ function index()
     entry({"admin", "quotas", "check_cmd"}, template("admin_quotas/check_cmd"), nil).leaf = true
 end
 
+function spinner_redirect(url)
+	url = http.protocol.urlencode(url)
+	local spinner = disp.build_url("admin/quotas/spinner") .. "?url=" .. url
+	http.redirect(spinner)
+end
+
 function action_stop()
-	luci.sys.call("/etc/init.d/download-quotas stop;  sleep 5")
-	luci.http.redirect(luci.dispatcher.build_url("admin/quotas/status"))
+	spinner_redirect(luci.dispatcher.build_url("admin/quotas/status"))
+	luci.sys.call("/etc/init.d/download-quotas stop")
 end
 
 function action_start()
-	luci.sys.call("/etc/init.d/download-quotas start;  sleep 5")
-	luci.http.redirect(luci.dispatcher.build_url("admin/quotas/status"))
+	spinner_redirect(luci.dispatcher.build_url("admin/quotas/status"))
+	luci.sys.call("/etc/init.d/download-quotas start")
 end
 
 function action_reset()
-	luci.sys.call("/etc/init.d/download-quotas reset;  sleep 5")
-	luci.http.redirect(luci.dispatcher.build_url("admin/quotas/status"))
+	spinner_redirect(luci.dispatcher.build_url("admin/quotas/status"))
+	luci.sys.call("/etc/init.d/download-quotas reset")
 end
 
 function log_cmd(cmd)
@@ -44,11 +50,8 @@ function log_cmd(cmd)
 end
 
 function action_install()
-	local done_url    = disp.build_url("admin/quotas/check_cmd")
-	done_url = http.protocol.urlencode(done_url)
-	local spinner_url = disp.build_url("admin/quotas/spinner") .. "?url=" .. done_url
-	http.redirect(spinner_url)
-
+	spinner_redirect(luci.dispatcher.build_url("admin/quotas/check_cmd"))
+	
         local file = http.formvalue("file")
         local md5 = luci.http.formvalue("md5")
 	log_cmd("/usr/share/download_quotas/luci/install " .. file .. " " .. md5)
