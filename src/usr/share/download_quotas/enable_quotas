@@ -66,6 +66,8 @@ run ipset add IP_QUOTA $lan.0/24
 
 insmod xt_set
 insmod xt_CLASSIFY
+insmod xt_string
+insmod ts_bm
 
 IPT="iptables -t mangle"
 IPT_POST="iptables -t mangle -A POSTROUTING -o $if_lan"
@@ -74,6 +76,19 @@ run $IPT -N normal
 run $IPT -N overquota
 run $IPT_POST -m set --match-set IP_QUOTA dst --bytes-gt $dl_quota -g overquota
 run $IPT_POST -m set --match-set IP_QUOTA dst ! --update-counters -g normal
+
+block_https()
+{
+    run iptables -t filter -A FORWARD -i $if_lan -p tcp --dport 443 -m string --algo bm --string "$1" -j REJECT
+}
+
+block_android=`get_config "$global_section.block_android_updates"`
+if [ "$block_android" = "1" ]; then
+    echo "blocking android updates"
+    block_https "play.googleapis.com"
+    block_https "android.clients.google.com"
+    block_https "lh3.googleusercontent.com"
+fi
 
 # classify packets
 for i in `ip_indexes`; do

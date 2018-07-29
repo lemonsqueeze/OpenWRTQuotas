@@ -16,6 +16,7 @@ s = m:section(TypedSection, "global", "Global")
 s.anonymous = true
 
 s:option(Flag, "metered_wifi",   "Metered Wifi", "Ask devices to reduce data usage (android devices only).")
+s:option(Flag, "block_android_updates",   "Block Android Updates", "WARNING: breaks google apps also: youtube, maps ...")
 s:option(Flag, "night_disable",  "Disable at night ?", "Turn off quotas between midnight - 6:00 ?")
 s:option(Value, "lan_interface",    "LAN Interface", "'br-lan' usually for openwrt.")
 

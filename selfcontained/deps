@@ -1,6 +1,9 @@
 ip
 ipset
 iptables-mod-ipopt
+iptables-mod-filter
+kmod-lib-textsearch
+kmod-ipt-filter
 kmod-ipt-ipopt
 kmod-ipt-ipset
 kmod-nfnetlink

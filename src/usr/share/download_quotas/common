@@ -1,5 +1,11 @@
 # download quotas common
 
+# Get /etc/config settings
+get_config()       {  uci -q get "$1";  }
+global_section="download_quotas.@global[0]"
+
+####################################################################################
+
 # dir to store runtime files
 dir=/var/download_quotas
 [ -d "$dir" ] || mkdir $dir

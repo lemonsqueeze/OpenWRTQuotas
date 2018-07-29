@@ -3,9 +3,6 @@
 source /etc/download_quotas.conf
 source /usr/share/download_quotas/common
 
-# Get settings from /etc/config
-global_section="download_quotas.@global[0]"
-get_config()       {  uci -q get "$1";  }
 check_flag()
 {
     v=`get_config "$global_section.$1"`
@@ -21,6 +18,7 @@ if [ -f $status_file ]; then
     echo "Max download speed: $dl_cap_max_kb k/s (overquota: $dl_cap_kb k/s)<br>"
     echo "<br>"
     echo "Metered wifi: `check_flag metered_wifi`<br>"
+    echo "Block android updates: `check_flag block_android_updates`<br>"
     echo "Disable at night: `check_flag night_disable`"
     echo "</p>"
 else
