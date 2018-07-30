@@ -90,6 +90,17 @@ if [ "$block_android" = "1" ]; then
     block_https "lh3.googleusercontent.com"
 fi
 
+block_apple=`get_config "$global_section.block_apple_updates"`
+if [ "$block_apple" = "1" ]; then
+    echo "blocking apple updates"
+    block_https "mesu.apple.com"
+    block_https "appldnld.apple.com"
+    block_https "swscan.apple.com"
+    block_https "swquery.apple.com"
+    block_https "swdownload.apple.com"
+    block_https "swcdn.apple.com"
+fi
+
 # classify packets
 for i in `ip_indexes`; do
     printf "creating iptables rules for $lan.$i\r"

@@ -6,6 +6,7 @@ config guests
 
 config global
 	option metered_wifi  '1'
+	option block_apple_updates  '0'
 	option block_android_updates  '0'
 	option night_disable '0'
 	option lan_interface 'br-lan'
