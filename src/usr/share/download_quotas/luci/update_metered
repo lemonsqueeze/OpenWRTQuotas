@@ -1,0 +1,22 @@
+#!/bin/sh
+# Usage: update_metered              : update from settings
+#        update_metered stop         : force stop
+
+action="$1"
+
+# Get settings from /etc/config
+get_config()       {  uci -q get "$1";  }
+
+status=`get_config "download_quotas.@global[0].metered_wifi" `
+[ "$action" = "stop" ] && status=""
+
+out=/tmp/dnsmasq.conf.tmp
+cat /etc/dnsmasq.conf | grep -v dhcp-option-force > $out
+
+if [ "$status" = "1" ]; then
+    echo "Setting metered wifi"
+    echo "dhcp-option-force=43,ANDROID_METERED" >> $out
+fi
+
+mv $out /etc/dnsmasq.conf
+/etc/init.d/dnsmasq reload

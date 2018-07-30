@@ -32,3 +32,9 @@ iptables -t nat -A POSTROUTING -o $if_wan -j MASQUERADE
 
 # destroy ipset
 ipset destroy IP_QUOTA  2>/dev/null
+
+#######################################################################
+# Other settings
+
+echo "Stopping metered wifi"
+/usr/share/download_quotas/luci/update_metered stop

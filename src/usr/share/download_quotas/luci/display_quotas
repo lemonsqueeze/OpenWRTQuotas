@@ -20,6 +20,7 @@ if [ -f $status_file ]; then
     echo "Download quota per device: $dl_quota_mb Mb<br>"
     echo "Max download speed: $dl_cap_max_kb k/s (overquota: $dl_cap_kb k/s)<br>"
     echo "<br>"
+    echo "Metered wifi: `check_flag metered_wifi`<br>"
     echo "Disable at night: `check_flag night_disable`"
     echo "</p>"
 else

@@ -85,4 +85,10 @@ echo ""
 
 touch $status_file
 
+#######################################################################
+# Other settings
+
+# metered wifi
+/usr/share/download_quotas/luci/update_metered
+
 echo "done !"

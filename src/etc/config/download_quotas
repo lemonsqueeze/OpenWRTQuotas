@@ -5,8 +5,9 @@ config guests
 	option speed_overquota '10'
 
 config global
-	option lan_interface 'br-lan'
+	option metered_wifi  '1'
 	option night_disable '0'
+	option lan_interface 'br-lan'
 
 config updates
 	option repo_url 'https://lemonsqueeze.github.io/OpenWRTQuotas/releases/openwrt/generic'
