@@ -27,7 +27,7 @@ ipset + iptables gives us download quotas by ip,
 we just need to keep track of mac/ip pairs (track_mac_usage, which runs every minute)
 
 For netfilter / iptables rules details see this SE [question](https://unix.stackexchange.com/a/375705) and
-[enable_quotas](https://github.com/lemonsqueeze/WifiDownloadQuotas/blob/master/src/usr/share/download_quotas/enable_quotas) source.
+[enable_quotas](https://github.com/lemonsqueeze/OpenWRTQuotas/blob/master/src/usr/share/download_quotas/enable_quotas) source.
 
 ------------------------------------------------------------------------------------
 

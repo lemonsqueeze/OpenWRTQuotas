@@ -9,4 +9,4 @@ Architecture: ARCH
 OS-Version: RELEASE_VERS
 Installed-Size: SIZE
 Description:  Wifi download quotas
-Homepage: http://github.com/lemonsqueeze/WifiDownloadQuotas
+Homepage: http://github.com/lemonsqueeze/OpenWRTQuotas
