@@ -1,0 +1,17 @@
+Package: download-quotas
+Version: 1.1
+Depends: 
+Source: 
+License: GPL-2.0
+Section: net
+Maintainer: lemonsqueeze <lemonsqueeze@gmx.com>
+Architecture: ramips_24kec
+OS-Version: 15.05.1
+Installed-Size: 213123
+Filename: download-quotas_1.1_ramips_24kec_15.05.ipk
+Size: 185901
+MD5Sum: 64eb4d9b09b245e16dfff50dcc4cf822
+SHA256sum: 5c920cc7672b5fc207fb64b271778591121b6f081da65b6bf14be0d0ead96a71
+Description:  Wifi download quotas
+Homepage: http://github.com/lemonsqueeze/WifiDownloadQuotas
+

@@ -1,0 +1,25 @@
+file: download-quotas_1.2.ipk
+date: 2018-07-29
+version: 1.2
+md5sum: d25f9e165cda84c08528e711fbc5260e
+changes:
+- option: metered wifi (android only)
+- option: block android updates
+- option: block apple updates
+
+file: download-quotas_1.1.ipk
+date: 2018-07-28
+version: 1.1
+md5sum: 538495cb96400b732f08376f3228b563
+changes:
+- interface: settings, admin
+- option: disable quotas at night
+
+file: download-quotas_1.0.ipk
+date: 2018-07-25
+version: 1.0
+md5sum: d03918be3d35f0f7f7e8b0be309ab35b
+changes:
+- updates: handle updates from external repo
+- interface: quotas tab (status, updates)
+

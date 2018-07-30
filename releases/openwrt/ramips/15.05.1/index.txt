@@ -1,0 +1,25 @@
+file: download-quotas_1.2_ramips_24kec_15.05.ipk
+date: 2018-07-29
+version: 1.2
+md5sum: a7fffec9595232c69be26c0cd58eccad
+changes:
+- option: metered wifi (android only)
+- option: block android updates
+- option: block apple updates
+
+file: download-quotas_1.1_ramips_24kec_15.05.ipk
+date: 2018-07-28
+version: 1.1
+md5sum: 3feffb2436e116d719232bad3c896824
+changes:
+- interface: settings, admin
+- option: disable quotas at night
+
+file: download-quotas_1.0_ramips_24kec_15.05.ipk
+date: 2018-07-25
+version: 1.0
+md5sum: b8e1017d9b60529ab7e1af7b7de97b8b
+changes:
+- updates: handle updates from external repo
+- interface: quotas tab (status, updates)
+

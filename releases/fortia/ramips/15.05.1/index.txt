@@ -1,0 +1,25 @@
+file: download-quotas_1.2_fortia_ramips_24kec_15.05.ipk
+date: 2018-07-29
+version: 1.2
+md5sum: 71b91b468a0248bab34131c61c6f5d5a
+changes:
+- option: parcimonie (android seulement)
+- option: bloquer les mises à jour android
+- option: bloquer les mises à jour apple
+
+file: download-quotas_1.1_fortia_ramips_24kec_15.05.ipk
+date: 2018-07-28
+version: 1.1
+md5sum: 492d4adcac196de643260a0e5d1f2342
+changes:
+- interface: paramètres, admin
+- option: désactiver les quotas la nuit
+
+file: download-quotas_1.0_fortia_ramips_24kec_15.05.ipk
+date: 2018-07-25
+version: 1.0
+md5sum: e27ced52c8b931862884f67c8e8a51e8
+changes:
+- gestion des mises a jour
+- interface web: statut, mises a jour
+
