@@ -33,7 +33,6 @@ MAKEFLAGS += --no-print-directory
 #########################################################################
 
 all: $(PKG)
-	@[ `id -u` != 0 ] && echo "Warning: build package as root for package files to be owned by root ..."
 
 selfcontained self: FORCE
 	@make SELFCONTAINED=1
@@ -46,14 +45,14 @@ $(PKG): pkg/data.tar.gz  pkg/control.tar.gz
 
 pkg/control.tar.gz: pkg/control pkg/postinst pkg/prerm
 	@echo gen control.tar.gz
-	@cd pkg ; tar -czf control.tar.gz control postinst prerm
+	@fakeroot -- sh -c "cd pkg ; chown root: * ; tar -czf control.tar.gz control postinst prerm"
 
 pkg/data.tar.gz: $(PKG_SRC) FORCE
 	@echo gen data.tar.gz
 	@cd src ; find . -name "*~" | xargs -r rm
-	@cd src       ; tar -cf ../pkg/data.tar .
+	@fakeroot -- sh -c "cd src       ; chown -R root: * ; tar -cf ../pkg/data.tar . "
 ifdef SELFCONTAINED
-	@cd src_extra ; tar -rf ../pkg/data.tar .
+	@fakeroot -- sh -c "cd src_extra ; chown -R root: * ; tar -rf ../pkg/data.tar . "
 endif
 	@gzip -f pkg/data.tar
 
