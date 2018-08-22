@@ -2,14 +2,6 @@
 # update script: download and install another version
 # usage: install remote_repo_file.ipk
 
-fake_wget()  {  
-	     if [ "$1" = "-O" ]; then shift; dst="$1"; shift
-	     else dst=`basename "$1"`
-	     fi
-             file=`basename "$1"`
-	     cp "/tmp/wget/$file" "$dst"
-}
-
 get_config()       {  uci -q get "$1";  }
 repo_url=`get_config "download_quotas.@other[0].repo_url"`
 
@@ -17,8 +9,8 @@ file=`basename "$1"`
 mkdir /tmp/downloads  2>/dev/null
 cd /tmp/downloads
 
-fake_wget -O "$file" "$repo_url/$1"        || exit 1
-tar -tvzf "$file" > /dev/null              || exit 1
-tar -tvzf "$file" | grep -q control.tar.gz || exit 1
-opkg remove download-quotas                || exit 1
-opkg install "$file"                       || exit 1
+/usr/bin/wget --no-check-certificate -O "$file" "$repo_url/$1"  || exit 1
+tar -tvzf "$file" > /dev/null                          || exit 1
+tar -tvzf "$file" | grep -q control.tar.gz             || exit 1
+opkg remove download-quotas                            || exit 1
+opkg install "$file"                                   || exit 1

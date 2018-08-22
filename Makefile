@@ -2,7 +2,7 @@
 VERSION=0.1cgi
 NAME=download-quotas
 PKG=$(NAME)_$(VERSION).ipk
-DEPENDS=ipset, tc, iptables-mod-ipopt, kmod-sched
+DEPENDS=ipset, tc, wget, iptables-mod-ipopt, kmod-sched
 PKG_SRC=src
 ARCH=all
 RELEASE_VERS=15.05.1

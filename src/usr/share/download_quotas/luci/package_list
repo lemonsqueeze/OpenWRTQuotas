@@ -2,20 +2,12 @@
 
 install_url="$1"
 
-fake_wget()  {  
-	     if [ "$1" = "-O" ]; then shift; dst="$1"; shift
-	     else dst=`basename "$1"`
-	     fi
-             file=`basename "$1"`
-	     cp "/tmp/wget/$file" "$dst"
-}
-
 get_config()       {  uci -q get "$1";  }
 repo_url=`get_config "download_quotas.@other[0].repo_url"`
 
 tmp="/tmp/downloads"
-mkdir $tmp
-fake_wget -O $tmp/index.txt "$repo_url/index.txt"
+rm -rf $tmp;  mkdir $tmp
+/usr/bin/wget --no-check-certificate -O $tmp/index.txt "$repo_url/index.txt"
 
 echo "<ul>"
 
