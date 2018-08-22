@@ -6,7 +6,7 @@ DEPENDS=ipset, tc, iptables-mod-ipopt, kmod-sched
 PKG_SRC=src
 ARCH=all
 RELEASE_VERS=15.05.1
-REPO_DIR=gh-pages/releases/base/generic
+REPO_DIR=gh-pages/releases/openwrt/generic
 
 # Make self-contained package ?
 # ie no dependencies, include needed binaries from other packages.
@@ -21,7 +21,7 @@ ifdef SELFCONTAINED
   TARGET=ramips/rt305x
   RELEASE_NAME=chaos_calmer
   RELEASE_VERS=15.05.1
-  REPO_DIR=gh-pages/releases/base/ramips/$(RELEASE_VERS)
+  REPO_DIR=gh-pages/releases/openwrt/ramips/$(RELEASE_VERS)
 
   RELEASE=$(RELEASE_NAME)/$(RELEASE_VERS)
   RELEASE_SHORT=$(shell echo -n $(RELEASE_VERS) | cut -d. -f1-2 )
