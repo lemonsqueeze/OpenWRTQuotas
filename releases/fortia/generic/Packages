@@ -1,0 +1,17 @@
+Package: download-quotas
+Version: 1.2
+Depends: ipset, tc, wget, iptables-mod-ipopt, iptables-mod-filter, kmod-sched
+Source: 
+License: GPL-2.0
+Section: net
+Maintainer: lemonsqueeze <lemonsqueeze@gmx.com>
+Architecture: all
+OS-Version: 15.05.1
+Installed-Size: 45092
+Filename: download-quotas_1.2_fortia.ipk
+Size: 25702
+MD5Sum: 5e8413eba36574660e859141f855337f
+SHA256sum: ba3cc0197039a8480e0cb5607bc31f19b4216cd7c864a82ae5fcb226e8c80f29
+Description:  Wifi download quotas
+Homepage: http://github.com/lemonsqueeze/OpenWRTQuotas
+
