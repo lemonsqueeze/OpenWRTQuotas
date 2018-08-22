@@ -1,7 +1,7 @@
 file: download-quotas_1.2_fortia.ipk
 date: 2018-07-29
 version: 1.2
-md5sum: f3430bc0534ae6652a47c9bb5f6cb7ef
+md5sum: 5e8413eba36574660e859141f855337f
 changes:
 - option: parcimonie (android seulement)
 - option: bloquer les mises à jour android
@@ -10,7 +10,7 @@ changes:
 file: download-quotas_1.1_fortia.ipk
 date: 2018-07-28
 version: 1.1
-md5sum: a6b5f7991a404acada4b863e56909434
+md5sum: 909c2b5104a8207d2bf12597a7db02a1
 changes:
 - interface: paramètres, admin
 - option: désactiver les quotas la nuit
@@ -18,7 +18,7 @@ changes:
 file: download-quotas_1.0_fortia.ipk
 date: 2018-07-25
 version: 1.0
-md5sum: 8e5a8b54d2679f693d9069c265f8fd56
+md5sum: 64cb7e6a3e4f9d23fedb50267b3767a2
 changes:
 - gestion des mises a jour
 - interface web: statut, mises a jour
