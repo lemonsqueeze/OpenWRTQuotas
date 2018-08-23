@@ -1,8 +1,10 @@
-OpenWRT Download Quotas
-=======================
+<img align="right" src="media/openwrt_logo.png">
 
-Implements download quotas per mac address on a Linux router.  
-At the moment it focuses on [OpenWrt](http://openwrt.org) but shouldn't be hard to port to other distributions.
+OpenWRT Quotas
+==============
+
+Download quotas per mac address for [OpenWRT](http://openwrt.org) routers.  
+This project focuses on OpenWRT but shouldn't be hard to port to other Linux routers/distributions.
 
 ### Scenario
 
@@ -26,34 +28,32 @@ for the weekend ? Lower speed and quota. Lots of bandwidth remaining ? Relax the
 ------------------------------------------------------------------------------------
 
 ### Installation
+<img align="right" src="media/tplink.jpg">
 
 You need:  
-- Router supported by [OpenWrt](http://openwrt.org) with at least 8Mb flash.
-- Ipset support (tested with OpenWRT 15.05 and 16.xx, but other releases should do. LEDE untested).
+- Router supported by [OpenWRT](http://openwrt.org) with at least 8Mb flash.
+- Ipset support (tested with OpenWRT 15.05 and 16.xx, but other releases should do (LEDE untested).
 
-I'm using a TP-Link TL-WR810N with 16.xx here: small form factor, costs about $30 and works nicely.
+Using a TP-Link TL-WR810N with OpenWRT 16.xx here: Small form factor, costs about $30 and works nicely.
 
 **Setup:**
-- Flash OpenWrt firmware and configure router.  
-  Read the [wiki](https://wiki.openwrt.org/), [docs](https://openwrt.org/docs),
-  go to the [downloads](https://openwrt.org/downloads), find the firmware for your router
+- Flash OpenWRT firmware and configure router:  
+  Go to the [downloads](https://openwrt.org/downloads), find the firmware for your router
   and follow the instructions there.
-- Log into the router admin interface, update package database:  
-  `Browser -> Router IP -> Login -> System -> Software -> Actions -> Update Lists`
-- Install `luci-ssl` from available software (https support)
-- Add package repository:  
-  Under `System -> Software -> Configuration -> Custom Feeds` add:  
-  `src/gz download-quotas https://lemonsqueeze.github.io/OpenWRTQuotas/releases/openwrt/generic`
-- Update package database again:  
-  `System -> Software -> Actions -> Update Lists`
-- Install `download-quota` from available software.
-- Done !
+- First install: Install package through ssh:
 
+      ssh root@192.168.1.1
+      # opkg update
+      # opkg install wget
+      # cd /tmp
+      # wget --no-check-certificate 'https://lemonsqueeze.github.io/OpenWRTQuotas/releases/openwrt/generic/download-quotas_1.2.ipk'
+      # opkg install download-quotas_1.2.ipk
+  
 Tips:
 - If web interface is missing after flashing openwrt you need to
   [install luci](https://wiki.openwrt.org/doc/howto/luci.essentials).
 - If you need more range / your fancy wifi router isn't supported you can also chain the two:
-  For example, TP-Link in ethernet-only mode between WAN and wifi router (it has 2 sockets),
+  For example, TP-Link in ethernet-only mode between WAN and wifi router,
   the other router does the wifi. Best of both worlds.
 - This won't work for 4Mb flash routers. You might be able to hack around but it won't be pretty,
   device is too space-constrained. No https support. You'll need a custom build and install
@@ -63,16 +63,20 @@ Tips:
 
 ### Interface
 
-Package adds a `Quotas` tab to openwrt's admin interface.
+Package adds a `Quotas` tab to openwrt's admin interface.  
 Login and tweak settings from there:
 
-![]()
-![]()
-![]()
+<a href="media/settings.png?raw=1"><img src="media/settings_sml.png" /></a>
 
-### Notes
+Use Admin tab to enable/disable quotas:
 
-At the moment it's not possible to use OpenWrt's firewall and download-quotas at the same time:
+<a href="media/admin.png?raw=1"><img src="media/admin_sml.png" /></a>
+
+New releases can be installed from the Update tab:
+
+<a href="media/update.png?raw=1"><img src="media/update_sml.png" /></a>
+
+> Note: At the moment it's not possible to use OpenWRT's firewall and download-quotas at the same time:
 download-quotas will wipe firewall rules when it starts and vice-versa.
 Currently firewall service is disabled when installing download-quotas.
 If you have have custom rules or create some through web interface they will not take effect.
@@ -82,24 +86,23 @@ If you have have custom rules or create some through web interface they will not
 
 ### Security
 
-This is by no means absolutely secure, however with a typical group of non-hostile guests it works pretty well:  
+This is by no means secure, however with a typical crowd of non-hostile guests it works pretty well:  
 
 - Mac addresses can be changed, if a guest does so he'll get a brand new quota.  
-- Limits only kick in for ip range specified in `enable_quota`. If you left addresses out
+- Limits only kick in for the dhcp ip range. If there are addresses left out
   a guest can bypass limits by using one of these ips (could be a feature too if you need
-  priviledged users. A better way would be to add special rules for them)  
+  priviledged users. A better way would be to add special rules for them).  
 - The mac/ip tracking logic runs every minute so when a pairing changes there's a window of
   at most 1 minute where a guest could be running on someone else's quota. Pairing changes are
   rare enough and in the worst case, at 100k/s the potential for abuse is small enough that
-  it doesn't matter here.
+  it doesn't matter.
 
 ------------------------------------------------------------------------------------
 
 ### Source
 
-- `base` branch: minimal scripts which are not openwrt specific. No ui.
+- `base` branch has minimal scripts which are not openwrt specific. No ui.
   Should be fairly easy to port to other distros.
-- `openwrt` branch adds admin interface and some extra features.
-  openwrt specific.
+- `openwrt` branch adds admin interface and some extra features (openwrt specific).
 
 See [HACKING](HACKING.md) for details.
