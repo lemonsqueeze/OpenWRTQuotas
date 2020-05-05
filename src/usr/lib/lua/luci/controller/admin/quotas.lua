@@ -24,7 +24,7 @@ function index()
 end
 
 function spinner_redirect(url)
-	url = http.protocol.urlencode(url)
+	url = http.urlencode(url)
 	local spinner = disp.build_url("admin/quotas/spinner") .. "?url=" .. url
 	http.redirect(spinner)
 end
