@@ -23,7 +23,7 @@ s:option(Value, "lan_interface",    "LAN Interface", "'br-lan' usually for openw
 
 
 function spinner_redirect(url)
-	url = http.protocol.urlencode(url)
+	url = http.urlencode(url)
 	local spinner = luci.dispatcher.build_url("admin/quotas/spinner") .. "?url=" .. url
 	http.redirect(spinner)
 end
